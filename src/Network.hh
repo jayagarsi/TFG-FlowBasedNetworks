@@ -20,6 +20,7 @@ class Network {
         // Auxiliars
         void eraseAllConnections(Graph& G);
         bool BFS(const Graph& residualG, int s, int t, vector<int>& path, int& minPathCapacity);
+        double minimumSTCut(Graph& F, int s, int t);        
         void DFS(const Graph& residualG, int s, vector<bool>& isInMinimumCut);
         void bestResponseMinFlow(Graph& GR, int u, int kUsed, pair<int, int>& maxUtility, vector<int>& maxStrategy);
         void bestResponseAvgFlow(Graph& GR, int u, int kUsed, double& maxUtility, vector<int>& maxStrategy);
@@ -30,10 +31,15 @@ class Network {
         Network();
         Network(int nAgents, int budget);
         ~Network();
-        double minimumSTCut(Graph& F, int s, int t);
 
+        // Random Generators
+        // void buildRandomGraph();
+        
+        // Strategy Changes
         void buyEdge(int u, int v, int w);
         void sellEdge(int u, int v, int w);
+        
+        // Exhaustive Search
         vector<int> agentBestResponse(int u, const string& model);
         void computeAllGameCombinations();
 

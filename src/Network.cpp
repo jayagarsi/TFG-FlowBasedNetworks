@@ -220,7 +220,7 @@ bool Network::isAgentHappy(int u, vector<int>& agentBestStrategy, const string& 
             isHappy = true;
         else                                            // if the first component is not bigger, then try to maximize the second one
             isHappy = maxUtility.second <= actualUtility.second;
-        cout << "(" << actualUtility.first << ", " << actualUtility.second << ")" << " (" << maxUtility.first << ", " << maxUtility.second << ") " << isHappy << endl;
+        //cout << "(" << actualUtility.first << ", " << actualUtility.second << ")" << " (" << maxUtility.first << ", " << maxUtility.second << ") " << isHappy << endl;
         return isHappy;
     }
     else {
@@ -230,7 +230,7 @@ bool Network::isAgentHappy(int u, vector<int>& agentBestStrategy, const string& 
         // If agent is happy there is no better move than the actual
         // so then the maximum utility is less or equal than the actual one
         bool isHappy = (maxUtility <= actualUtility);
-        cout << actualUtility << " " << maxUtility << " " << isHappy << endl;
+        //cout << actualUtility << " " << maxUtility << " " << isHappy << endl;
         return isHappy;
     }
 }
@@ -368,10 +368,10 @@ void Network::simulateGameDynamics(const string& model) {
             if (not isHappy) {
                 someoneIsUnhappy = true;
                 setAgentStrategy(u, agentBestStrategy);
-                cout << "Agent " << u << " is not happy ";
+                /*cout << "Agent " << u << " is not happy ";
                 for (int i = 0; i < agentBestStrategy.size(); ++i)
                     cout << agentBestStrategy[i] << " ";
-                cout << endl;
+                cout << endl;*/
             }
         }
         //printAdjacencyMatrix(0);

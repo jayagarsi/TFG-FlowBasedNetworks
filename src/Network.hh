@@ -46,9 +46,10 @@ class Network {
         double minimumGraphCut(Graph& F);
         void printAdjacencyMatrix(int g);
         void printAdjacencyMatrix(const Graph& G);
-        void printAllModelsUtility();
+        void printModelsUtility(const string& model);
         bool setAgentStrategy(int u, const vector<int>& st);
         void simulateGameDynamics(const string& model);
+        void convertDirectedToUndirected(Graph& G, Graph& F);
 
         // AVG-FLOW Model
         double avgFlowAgentUtility(Graph& F, int u);

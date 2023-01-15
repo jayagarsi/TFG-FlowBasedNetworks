@@ -113,12 +113,22 @@ double Network::minimumSTCut(Graph& F, int s, int t) {
 
 void Network::bestResponseMinFlow(Graph& GR, int u, int kUsed, pair<int, int>& maxUtility, vector<int>& maxStrategy) {
     if (kUsed == k) {
-        pair<int, int> actualUtility = minFlowAgentUtility(GR, u);
-        if (actualUtility.first > maxUtility.first or actualUtility.second > maxUtility.second) {
+        Graph FR(n, vector<int>(n, 0));
+        convertDirectedToUndirected(GR, FR);
+        auto actualUtility = minFlowAgentUtility(FR, u);
+        if (actualUtility.first > maxUtility.first) {
             maxUtility.first = actualUtility.first;
             maxUtility.second = actualUtility.second;
             for (int v = 0; v < n; ++v)
-                maxStrategy[v] = GR[u][v];
+                maxStrategy[v] = GR[u][v]; 
+        }
+        else {
+            if (actualUtility.second > maxUtility.second) {
+                maxUtility.first = actualUtility.first;
+                maxUtility.second = actualUtility.second;
+                for (int v = 0; v < n; ++v)
+                    maxStrategy[v] = GR[u][v];
+            }
         }
     }
     else {
@@ -136,7 +146,9 @@ void Network::bestResponseMinFlow(Graph& GR, int u, int kUsed, pair<int, int>& m
 
 void Network::bestResponseAvgFlow(Graph& GR, int u, int kUsed, double& maxUtility, vector<int>& maxStrategy) {
     if (kUsed == k) {
-        double actualUtility = avgFlowAgentUtility(GR, u);
+        Graph FR(n, vector<int>(n, 0));
+        convertDirectedToUndirected(GR, FR);
+        double actualUtility = avgFlowAgentUtility(FR, u);
         if (actualUtility > maxUtility) {
             maxUtility = actualUtility;
             for (int v = 0; v < n; ++v)
@@ -201,13 +213,25 @@ bool Network::isAgentHappy(int u, vector<int>& agentBestStrategy, const string& 
         auto actualUtility = minFlowAgentUtility(F, u);
         pair<int, int> maxUtility = make_pair(0, 0);
         bestResponseMinFlow(Gaux, u, 0, maxUtility, agentBestStrategy);
-        return (maxUtility.first > actualUtility.first) or (maxUtility.second > actualUtility.second);
+        // If agent is happy there is no better move than the actual
+        // so then the maximum utility is less or equal than the actual one
+        bool isHappy = false;
+        if (maxUtility.first <= actualUtility.first)    // first we want to maximize de the first component of the vector
+            isHappy = true;
+        else                                            // if the first component is not bigger, then try to maximize the second one
+            isHappy = maxUtility.second <= actualUtility.second;
+        cout << "(" << actualUtility.first << ", " << actualUtility.second << ")" << " (" << maxUtility.first << ", " << maxUtility.second << ") " << isHappy << endl;
+        return isHappy;
     }
     else {
         auto actualUtility = avgFlowAgentUtility(F, u);
         double maxUtility = 0.0;
         bestResponseAvgFlow(Gaux, u, 0, maxUtility, agentBestStrategy);
-        return (maxUtility > actualUtility);
+        // If agent is happy there is no better move than the actual
+        // so then the maximum utility is less or equal than the actual one
+        bool isHappy = (maxUtility <= actualUtility);
+        cout << actualUtility << " " << maxUtility << " " << isHappy << endl;
+        return isHappy;
     }
 }
 
@@ -269,7 +293,7 @@ void Network::printAdjacencyMatrix(int g) {
     }
 }
 
-    void Network::printAdjacencyMatrix(const Graph& G) {
+void Network::printAdjacencyMatrix(const Graph& G) {
     for (int v = 0; v < n; ++v)
         cout << " " << v;
     cout << endl << "    ";
@@ -285,21 +309,40 @@ void Network::printAdjacencyMatrix(int g) {
     }
 }
 
-void Network::printAllModelsUtility() {
-    cout << "avgFlow-NCG Model" << endl;
-    for (int u = 0; u < n; ++u)
-        cout << " - Agent " << u << ": " << avgFlowAgentUtility(F, u) << endl;
-    cout << " - Social Utility: " << avgFlowSocialUtility(F) << endl;
-    cout << "------------------------" << endl;
-
-    cout << "minFlow-NCG Model" << endl;
-    double minCut = 0.0;
-    for (int u = 0; u < n; ++u) {
-        auto agentUtility = minFlowAgentUtility(F, u);
-        minCut = agentUtility.first;
-        cout << " - Agent " << u << ": (" << agentUtility.first << ", " << agentUtility.second << ")" << endl;
+void Network::printModelsUtility(const string& model) {
+    if (model == "min") {
+        cout << "minFlow-NCG Model" << endl;
+        double minCut = 0.0;
+        for (int u = 0; u < n; ++u) {
+            auto agentUtility = minFlowAgentUtility(F, u);
+            minCut = agentUtility.first;
+            cout << " - Agent " << u << ": (" << agentUtility.first << ", " << agentUtility.second << ")" << endl;
+        }
+        cout << " - Social Utility: " << minCut << endl; 
     }
-    cout << " - Social Utility: " << minCut << endl; 
+    else if (model == "avg") {
+        cout << "avgFlow-NCG Model" << endl;
+        for (int u = 0; u < n; ++u)
+            cout << " - Agent " << u << ": " << avgFlowAgentUtility(F, u) << endl;
+        cout << " - Social Utility: " << avgFlowSocialUtility(F) << endl;
+        cout << "------------------------" << endl;
+    }
+    else {
+        cout << "avgFlow-NCG Model" << endl;
+        for (int u = 0; u < n; ++u)
+            cout << " - Agent " << u << ": " << avgFlowAgentUtility(F, u) << endl;
+        cout << " - Social Utility: " << avgFlowSocialUtility(F) << endl;
+        cout << "------------------------" << endl;
+
+        cout << "minFlow-NCG Model" << endl;
+        double minCut = 0.0;
+        for (int u = 0; u < n; ++u) {
+            auto agentUtility = minFlowAgentUtility(F, u);
+            minCut = agentUtility.first;
+            cout << " - Agent " << u << ": (" << agentUtility.first << ", " << agentUtility.second << ")" << endl;
+        }
+        cout << " - Social Utility: " << minCut << endl;
+    }
 }
 
 bool Network::setAgentStrategy(int u, const vector<int>& st) {
@@ -322,13 +365,26 @@ void Network::simulateGameDynamics(const string& model) {
         for (int u = 0; u < n; u++) {
             vector<int> agentBestStrategy(n);
             bool isHappy = isAgentHappy(u, agentBestStrategy, model);
-            if (not isHappy) { 
+            if (not isHappy) {
                 someoneIsUnhappy = true;
                 setAgentStrategy(u, agentBestStrategy);
+                cout << "Agent " << u << " is not happy ";
+                for (int i = 0; i < agentBestStrategy.size(); ++i)
+                    cout << agentBestStrategy[i] << " ";
+                cout << endl;
             }
         }
-        printAdjacencyMatrix(0);
-        cout << endl;
+        //printAdjacencyMatrix(0);
+        //cout << endl;
+    }
+}
+
+void Network::convertDirectedToUndirected(Graph& G, Graph& F) {
+    for (int u = 0; u < n; u++) {
+        for (int v = 0; v < n; v++) {
+            int val = G[v][u] + G[u][v];
+            F[v][u] = val;
+        }
     }
 }
 
@@ -346,8 +402,8 @@ double Network::avgFlowAgentUtility(Graph& F, int u) {
 
 double Network::avgFlowSocialUtility(Graph& F) {
     double socialU = 0.0;
-    for (int v = 0; v < n; ++v)
-        socialU += avgFlowAgentUtility(F, v);
+    for (int u = 0; u < n; ++u)
+        socialU += avgFlowAgentUtility(F, u);
     socialU /= n;
     return socialU;
 }
@@ -358,7 +414,7 @@ int Network::wellConnectedNeighbours(Graph& F, int u) {
     int numWellConnected = 0;
     for (int v = 0;  v < n; ++v)
         if (v != u)
-            if (minimumSTCut(F, v, u) > networkMinCut)
+            if (minimumSTCut(F, v, u) > minimumGraphCut(F))
                 ++numWellConnected;
     return numWellConnected;
 }

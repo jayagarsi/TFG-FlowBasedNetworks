@@ -156,44 +156,6 @@ void Network::bestResponseAvgFlow(Graph& GR, int u, int kUsed, double& maxUtilit
     }
 }
 
-void Network::computeAllGameCombinationsRecursive(Graph& G, vector<int>& budget, vector<bool>& hasBudget) {
-
-    bool allWasted = true;
-    for (int i = 0; i < n; ++i)
-        if (hasBudget[i]) 
-            allWasted = false;
-
-    if (allWasted) {
-        double avgUtility = avgFlowSocialUtility(G);
-        double minUtility = minFlowSocialUtility(G);
-        if (avgUtility == 2*k or minUtility == 2*k) {
-            for (int i = 0; i < n; ++i) {
-                for (int j = 0; j < n; ++j)
-                    cout << G[i][j] << " ";
-                cout << endl;
-            }
-        }
-    }
-
-    else {
-        for (int u = 0; u < n; ++u) {
-            for (int v = 0; v < n; ++v) {
-                if (u != v and hasBudget[u]) {
-                    budget[u] -= 1;
-                    if (budget[u] == 0)
-                        hasBudget[u] = false;
-                    G[u][v] += 1;
-                    computeAllGameCombinationsRecursive(G, budget, hasBudget);
-                    G[u][v] -= 1;
-                    budget[u] += 1;
-                    hasBudget[u] = true;
-                }
-            }
-        }
-    }
-}
-
-
 void Network::buyEdge(int u, int v, int w) {
     G[u][v] += w;
     F[u][v] += w;
@@ -218,8 +180,8 @@ vector<int> Network::agentBestResponse(int u, const string& model) {
             if (w != u) Gaux[w][v] = G[w][v];
     
     if (model == "min") {
-        pair<int, int> p = make_pair(0, 0);
-        bestResponseMinFlow(Gaux, u, 0, p, bestStrategy);
+        pair<int, int> maxUtility = make_pair(0, 0);
+        bestResponseMinFlow(Gaux, u, 0, maxUtility, bestStrategy);
     }
     else {
         double maxUtility = 0.0;
@@ -228,11 +190,25 @@ vector<int> Network::agentBestResponse(int u, const string& model) {
     return bestStrategy;
 }
 
-void Network::computeAllGameCombinations() {
-    Graph G(n, vector<int>(n, 0));
-    vector<int> budget(n, k);
-    vector<bool> hasBudget(n, true);
-    computeAllGameCombinationsRecursive(G, budget, hasBudget);
+bool Network::isAgentHappy(int u, vector<int>& agentBestStrategy, const string& model) {
+    Graph Gaux(n, vector<int>(n, 0));
+    for (int w = 0; w < n; ++w)
+        for (int v = 0; v < n; ++v)
+            if (w != u) 
+                Gaux[w][v] = G[w][v];
+
+    if (model == "min") {
+        auto actualUtility = minFlowAgentUtility(F, u);
+        pair<int, int> maxUtility = make_pair(0, 0);
+        bestResponseMinFlow(Gaux, u, 0, maxUtility, agentBestStrategy);
+        return (maxUtility.first > actualUtility.first) or (maxUtility.second > actualUtility.second);
+    }
+    else {
+        auto actualUtility = avgFlowAgentUtility(F, u);
+        double maxUtility = 0.0;
+        bestResponseAvgFlow(Gaux, u, 0, maxUtility, agentBestStrategy);
+        return (maxUtility > actualUtility);
+    }
 }
 
 double Network::minimumGraphCut(Graph& F) {
@@ -293,6 +269,22 @@ void Network::printAdjacencyMatrix(int g) {
     }
 }
 
+    void Network::printAdjacencyMatrix(const Graph& G) {
+    for (int v = 0; v < n; ++v)
+        cout << " " << v;
+    cout << endl << "    ";
+    for (int v = 0; v < n; ++v)
+        cout << "-" << " ";
+    cout << endl;
+    for (int v = 0; v < n; ++v) {
+        cout << v << " | ";
+        for (int u = 0; u < n; ++u) {
+                cout << G[u][v] << " ";
+        }
+        cout << endl;
+    }
+}
+
 void Network::printAllModelsUtility() {
     cout << "avgFlow-NCG Model" << endl;
     for (int u = 0; u < n; ++u)
@@ -301,20 +293,42 @@ void Network::printAllModelsUtility() {
     cout << "------------------------" << endl;
 
     cout << "minFlow-NCG Model" << endl;
+    double minCut = 0.0;
     for (int u = 0; u < n; ++u) {
         auto agentUtility = minFlowAgentUtility(F, u);
+        minCut = agentUtility.first;
         cout << " - Agent " << u << ": (" << agentUtility.first << ", " << agentUtility.second << ")" << endl;
     }
-    cout << " - Social Utility: " << networkMinCut << endl; 
+    cout << " - Social Utility: " << minCut << endl; 
 }
 
-void Network::setAgentStrategy(int u, const vector<int>& st) {
+bool Network::setAgentStrategy(int u, const vector<int>& st) {
+    bool someChanged = false;
     for (int v = 0; v < n; ++v) {
+        if (G[u][v] != st[v]) someChanged = true;
         F[u][v] -= G[u][v];
         F[v][u] -= G[u][v];
         G[u][v] = st[v];
         F[u][v] += st[v];
         F[v][u] += st[v];
+    }
+    return someChanged;
+}
+
+void Network::simulateGameDynamics(const string& model) {
+    bool someoneIsUnhappy = true;
+    while (someoneIsUnhappy) {
+        someoneIsUnhappy = false;
+        for (int u = 0; u < n; u++) {
+            vector<int> agentBestStrategy(n);
+            bool isHappy = isAgentHappy(u, agentBestStrategy, model);
+            if (not isHappy) { 
+                someoneIsUnhappy = true;
+                setAgentStrategy(u, agentBestStrategy);
+            }
+        }
+        printAdjacencyMatrix(0);
+        cout << endl;
     }
 }
 

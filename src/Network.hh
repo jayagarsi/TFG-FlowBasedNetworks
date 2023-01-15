@@ -24,7 +24,6 @@ class Network {
         void DFS(const Graph& residualG, int s, vector<bool>& isInMinimumCut);
         void bestResponseMinFlow(Graph& GR, int u, int kUsed, pair<int, int>& maxUtility, vector<int>& maxStrategy);
         void bestResponseAvgFlow(Graph& GR, int u, int kUsed, double& maxUtility, vector<int>& maxStrategy);
-        void computeAllGameCombinationsRecursive(Graph& G, vector<int>& budget, vector<bool>& hasBudget);
 
     public:
         // Constructors
@@ -41,13 +40,15 @@ class Network {
         
         // Exhaustive Search
         vector<int> agentBestResponse(int u, const string& model);
-        void computeAllGameCombinations();
+        bool isAgentHappy(int u, vector<int>& agentBestStrategy, const string& model);
 
         // Auxiliars
         double minimumGraphCut(Graph& F);
         void printAdjacencyMatrix(int g);
+        void printAdjacencyMatrix(const Graph& G);
         void printAllModelsUtility();
-        void setAgentStrategy(int u, const vector<int>& st);
+        bool setAgentStrategy(int u, const vector<int>& st);
+        void simulateGameDynamics(const string& model);
 
         // AVG-FLOW Model
         double avgFlowAgentUtility(Graph& F, int u);

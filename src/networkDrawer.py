@@ -1,3 +1,4 @@
+import pandas as pd
 import networkx as nx
 import my_draw_networx_edge_labels as my_nx
 import matplotlib.pyplot as plt
@@ -27,4 +28,30 @@ def drawDirectedNetwork(G):
     plt.show()
 
 if __name__ == '__main__':
-    print("hola")
+    inputData = pd.read_csv('output.csv', index_col = 0)
+    G = nx.DiGraph(inputData.values)
+    drawDirectedNetwork(G)
+    """
+    C = int(input("Columnes: "))
+    R = int(input("Files: "))
+    print("Enter the entries rowwise:")
+    #mat = []
+    # For user input
+    #for i in range(R):          # A for loop for row entries
+    #    a =[]
+    #    for j in range(C):      # A for loop for column entries
+    #       a.append(int(input()))
+    #    mat.append(a)    
+    mat = [[int(input()) for x in range (C)] for y in range(R)]
+    print("tu madre")
+    G = nx.DiGraph()
+    for i in range(R):
+        for j in range(C):
+            G.add_edge(i, j, weight = mat[i][j])
+    drawDirectedNetwork(G)
+
+#0 | 0 1 0 3
+#1 | 2 0 1 0
+#2 | 0 2 0 0
+#3 | 1 0 2 0
+"""

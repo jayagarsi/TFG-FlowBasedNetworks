@@ -32,7 +32,7 @@ class Network {
         ~Network();
 
         // Random Generators
-        // void buildRandomGraph();
+        void buildRandomGraph();
         
         // Strategy Changes
         void buyEdge(int u, int v, int w);

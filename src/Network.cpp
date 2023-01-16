@@ -2,6 +2,8 @@
 #include <queue>
 #include <climits>
 #include <algorithm>
+#include <random>
+#include <functional>
 
 /*----------------------- CONSTRUCTORS -----------------------*/
 
@@ -168,6 +170,23 @@ void Network::bestResponseAvgFlow(Graph& GR, int u, int kUsed, double& maxUtilit
     }
 }
 
+void Network::buildRandomGraph() {
+    default_random_engine generator;
+    uniform_int_distribution<int> distribution(1, k);
+    auto dice = bind(distribution, generator);
+    for (int u = 0; u < n; u++) {
+        for (int v = 0; v < n ; v++) {
+            int capacityBought = dice();
+            if (capacityBought > budgets[u])
+                capacityBought = budgets[u];
+            G[u][v] = capacityBought;
+            F[u][v] += G[u][v];
+            F[v][u] += G[u][v];
+            budgets[u] -= capacityBought;
+        }
+    }
+}
+
 void Network::buyEdge(int u, int v, int w) {
     G[u][v] += w;
     F[u][v] += w;
@@ -216,11 +235,11 @@ bool Network::isAgentHappy(int u, vector<int>& agentBestStrategy, const string& 
         // If agent is happy there is no better move than the actual
         // so then the maximum utility is less or equal than the actual one
         bool isHappy = false;
-        if (maxUtility.first <= actualUtility.first)    // first we want to maximize de the first component of the vector
-            isHappy = true;
-        else                                            // if the first component is not bigger, then try to maximize the second one
+        if (maxUtility.first > actualUtility.first)    // first we want to maximize de the first component of the vector
+            isHappy = false;
+        else                                           // if the first component is not bigger, then try to maximize the second one
             isHappy = maxUtility.second <= actualUtility.second;
-        //cout << "(" << actualUtility.first << ", " << actualUtility.second << ")" << " (" << maxUtility.first << ", " << maxUtility.second << ") " << isHappy << endl;
+        cout << u << ": (" << actualUtility.first << ", " << actualUtility.second << ")" << " (" << maxUtility.first << ", " << maxUtility.second << ") " << isHappy << endl;
         return isHappy;
     }
     else {
@@ -230,7 +249,7 @@ bool Network::isAgentHappy(int u, vector<int>& agentBestStrategy, const string& 
         // If agent is happy there is no better move than the actual
         // so then the maximum utility is less or equal than the actual one
         bool isHappy = (maxUtility <= actualUtility);
-        //cout << actualUtility << " " << maxUtility << " " << isHappy << endl;
+        cout << u << ": " << actualUtility << " " << maxUtility << " " << isHappy << endl;
         return isHappy;
     }
 }
@@ -360,6 +379,7 @@ bool Network::setAgentStrategy(int u, const vector<int>& st) {
 
 void Network::simulateGameDynamics(const string& model) {
     bool someoneIsUnhappy = true;
+    int cont = 0;
     while (someoneIsUnhappy) {
         someoneIsUnhappy = false;
         for (int u = 0; u < n; u++) {

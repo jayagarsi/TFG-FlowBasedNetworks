@@ -118,19 +118,12 @@ void Network::bestResponseMinFlow(Graph& GR, int u, int kUsed, pair<int, int>& m
         Graph FR(n, vector<int>(n, 0));
         convertDirectedToUndirected(GR, FR);
         auto actualUtility = minFlowAgentUtility(FR, u);
-        if (actualUtility.first > maxUtility.first) {
+        //cout << actualUtility.first <<  " " << actualUtility.second << endl;
+        if (actualUtility.first >= maxUtility.first) {
             maxUtility.first = actualUtility.first;
             maxUtility.second = actualUtility.second;
             for (int v = 0; v < n; ++v)
                 maxStrategy[v] = GR[u][v]; 
-        }
-        else {
-            if (actualUtility.second > maxUtility.second) {
-                maxUtility.first = actualUtility.first;
-                maxUtility.second = actualUtility.second;
-                for (int v = 0; v < n; ++v)
-                    maxStrategy[v] = GR[u][v];
-            }
         }
     }
     else {
@@ -234,11 +227,9 @@ bool Network::isAgentHappy(int u, vector<int>& agentBestStrategy, const string& 
         bestResponseMinFlow(Gaux, u, 0, maxUtility, agentBestStrategy);
         // If agent is happy there is no better move than the actual
         // so then the maximum utility is less or equal than the actual one
-        bool isHappy = false;
-        if (maxUtility.first > actualUtility.first)    // first we want to maximize de the first component of the vector
-            isHappy = false;
-        else                                           // if the first component is not bigger, then try to maximize the second one
-            isHappy = maxUtility.second <= actualUtility.second;
+        bool isHappy = false;                                       // the agent will be unhappy if the maximum minCut is bigger than the actual
+        if (maxUtility.first == actualUtility.first)                // agent will only be happy when he cannot improve the minimum cut
+            isHappy = maxUtility.second == actualUtility.second;    // nor the minimum cut of their neighbors
         cout << u << ": (" << actualUtility.first << ", " << actualUtility.second << ")" << " (" << maxUtility.first << ", " << maxUtility.second << ") " << isHappy << endl;
         return isHappy;
     }
@@ -378,6 +369,10 @@ bool Network::setAgentStrategy(int u, const vector<int>& st) {
 }
 
 void Network::simulateGameDynamics(const string& model) {
+    cout << "Original Graph" << endl;
+    printAdjacencyMatrix(0);
+    printModelsUtility(model);
+
     bool someoneIsUnhappy = true;
     int cont = 0;
     while (someoneIsUnhappy) {
@@ -388,15 +383,15 @@ void Network::simulateGameDynamics(const string& model) {
             if (not isHappy) {
                 someoneIsUnhappy = true;
                 setAgentStrategy(u, agentBestStrategy);
-                /*cout << "Agent " << u << " is not happy ";
-                for (int i = 0; i < agentBestStrategy.size(); ++i)
-                    cout << agentBestStrategy[i] << " ";
-                cout << endl;*/
             }
         }
-        //printAdjacencyMatrix(0);
-        //cout << endl;
     }
+    cout << "-------------------------------------" << endl;
+    cout << "-------------------------------------" << endl;
+    cout << "-------------------------------------" << endl;
+    cout << "Graph changed by agents best response" << endl;
+    printAdjacencyMatrix(0);
+    printModelsUtility(model);
 }
 
 void Network::convertDirectedToUndirected(Graph& G, Graph& F) {

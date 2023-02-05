@@ -118,12 +118,40 @@ void Network::bestResponseMinFlow(Graph& GR, int u, int kUsed, pair<int, int>& m
         Graph FR(n, vector<int>(n, 0));
         convertDirectedToUndirected(GR, FR);
         auto actualUtility = minFlowAgentUtility(FR, u);
-        //cout << actualUtility.first <<  " " << actualUtility.second << endl;
-        if (actualUtility.first >= maxUtility.first) {
+        // The min-cut stays the same so let's check the second component
+        if (actualUtility.first == maxUtility.first) {
+            if (actualUtility.second > maxUtility.second) {
+                maxUtility.second = actualUtility.second;
+                for (int v = 0; v < n; ++v)
+                    maxStrategy[v] = GR[u][v]; 
+            }
+                cout << actualUtility.first <<  " " << actualUtility.second << endl;
+                cout << " ";
+                for (int i = 0; i < maxStrategy.size(); ++i)
+                    cout << i << " ";
+                cout << endl;
+                cout << "[";
+                for (int i = 0; i < maxStrategy.size(); ++i)
+                    cout << maxStrategy[i] << " ";
+                cout << "]" << endl;
+                cout << endl;
+        }
+        // The min-cut has upgraded so we have to copy all values independently of wich they are
+        else if (actualUtility.first > maxUtility.first) {
             maxUtility.first = actualUtility.first;
             maxUtility.second = actualUtility.second;
             for (int v = 0; v < n; ++v)
-                maxStrategy[v] = GR[u][v]; 
+                maxStrategy[v] = GR[u][v];
+            cout << actualUtility.first <<  " " << actualUtility.second << endl;
+            cout << " ";
+            for (int i = 0; i < maxStrategy.size(); ++i)
+                cout << i << " ";
+            cout << endl;
+            cout << "[";
+            for (int i = 0; i < maxStrategy.size(); ++i)
+                cout << maxStrategy[i] << " ";
+            cout << "]" << endl;
+            cout << endl;
         }
     }
     else {
@@ -147,7 +175,17 @@ void Network::bestResponseAvgFlow(Graph& GR, int u, int kUsed, double& maxUtilit
         if (actualUtility > maxUtility) {
             maxUtility = actualUtility;
             for (int v = 0; v < n; ++v)
-                maxStrategy[v] = GR[u][v];
+            maxStrategy[v] = GR[u][v];
+            cout << actualUtility << endl;
+            cout << " ";
+            for (int i = 0; i < maxStrategy.size(); ++i)
+                cout << i << " ";
+            cout << endl;
+            cout << "[";
+            for (int i = 0; i < maxStrategy.size(); ++i)
+                cout << maxStrategy[i] << " ";
+            cout << "]" << endl;
+            cout << endl;
         }
     }
     else {

@@ -1,4 +1,3 @@
-import pandas as pd
 import networkx as nx
 import my_draw_networx_edge_labels as my_nx
 import matplotlib.pyplot as plt
@@ -25,33 +24,23 @@ def drawDirectedNetwork(G):
     straight_edge_labels = {edge: edge_weights[edge] for edge in straight_edges}
     my_nx.my_draw_networkx_edge_labels(G, pos, ax=ax, edge_labels=curved_edge_labels,rotate=False,rad = arc_rad)
     nx.draw_networkx_edge_labels(G, pos, ax=ax, edge_labels=straight_edge_labels,rotate=False)
-    plt.show()
+    plt.savefig("graph.png")
 
 if __name__ == '__main__':
-    inputData = pd.read_csv('output.csv', index_col = 0)
-    G = nx.DiGraph(inputData.values)
-    drawDirectedNetwork(G)
-    """
-    C = int(input("Columnes: "))
-    R = int(input("Files: "))
-    print("Enter the entries rowwise:")
-    #mat = []
-    # For user input
-    #for i in range(R):          # A for loop for row entries
-    #    a =[]
-    #    for j in range(C):      # A for loop for column entries
-    #       a.append(int(input()))
-    #    mat.append(a)    
-    mat = [[int(input()) for x in range (C)] for y in range(R)]
-    print("tu madre")
-    G = nx.DiGraph()
-    for i in range(R):
-        for j in range(C):
-            G.add_edge(i, j, weight = mat[i][j])
-    drawDirectedNetwork(G)
+    file = open("graphInstance.txt", "r")
+    n = int(file.readline())
+    adjacencyMatrix = []
+    for i in range(n):
+        row = list(file.readline())
+        row = [int(w) for w in row[:-1]]
+        adjacencyMatrix.append(row)
 
-#0 | 0 1 0 3
-#1 | 2 0 1 0
-#2 | 0 2 0 0
-#3 | 1 0 2 0
-"""
+    file.close()
+
+    G = nx.DiGraph()
+    for i in range(n):
+        for j in range(n):
+            edgeWeight = adjacencyMatrix[i][j]
+            if (edgeWeight != 0):
+                G.add_edge(i, j, weight = edgeWeight)
+    drawDirectedNetwork(G)

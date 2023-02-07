@@ -6,7 +6,7 @@ int main() {
     int n = 7;
     int k = 2;
     Network G(n, k);
-    string model = "min";
+    string model = "avg";
     G.buyEdge(0, 1, 2);
     G.buyEdge(1, 2, 1);
     G.buyEdge(1, 3, 1);
@@ -26,5 +26,14 @@ int main() {
     G.setAgentStrategy(0, bestStrategy);
     G.printModelsUtility(model);
     G.printAdjacencyMatrix(0);
-    
+    cout << endl;
+
+    cout << "---------------------- ALGORISME DetermIINSTI -------------------" << endl;
+    bestStrategy = G.agentBestResponseMinFlowDeterministic(0);
+    G.setAgentStrategy(0, bestStrategy);
+    G.printModelsUtility("avg");
+    G.printAdjacencyMatrix(0);
+    cout << endl;
+
+    G.drawGraph(0);
 }

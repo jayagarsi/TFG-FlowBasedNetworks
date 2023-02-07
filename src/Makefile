@@ -11,3 +11,5 @@ Network.o: Network.cpp  Network.hh
 clean:
 	rm -f *.o
 	rm main
+	rm graphInstance.txt
+	rm graph.png

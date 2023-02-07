@@ -40,16 +40,20 @@ class Network {
         
         // Exhaustive Search
         vector<int> agentBestResponse(int u, const string& model);
+        vector<int> agentBestResponseMinFlowDeterministic(int u);
+        vector<int> agentBestResponseAvgFlowDeterministic(int u);
         bool isAgentHappy(int u, vector<int>& agentBestStrategy, const string& model);
 
         // Auxiliars
         double minimumGraphCut(Graph& F);
+        int agentDegree(Graph& F, int u);
         void printAdjacencyMatrix(int g);
         void printAdjacencyMatrix(const Graph& G);
         void printModelsUtility(const string& model);
         bool setAgentStrategy(int u, const vector<int>& st);
         void simulateGameDynamics(const string& model);
         void convertDirectedToUndirected(Graph& G, Graph& F);
+        void drawGraph(int g);
 
         // AVG-FLOW Model
         double avgFlowAgentUtility(Graph& F, int u);

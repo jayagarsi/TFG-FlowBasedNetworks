@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <random>
 #include <functional>
+#include <fstream>
 
 /*----------------------- CONSTRUCTORS -----------------------*/
 
@@ -252,6 +253,59 @@ vector<int> Network::agentBestResponse(int u, const string& model) {
     return bestStrategy;
 }
 
+vector<int> Network::agentBestResponseMinFlowDeterministic(int u) {
+        Graph Gaux(n, vector<int>(n, 0));
+    for (int w = 0; w < n; ++w)
+        for (int v = 0; v < n; ++v)
+            if (w != u) Gaux[w][v] = G[w][v];
+
+    vector<int> bestStrategy(n, 0);
+    for (int i = 0; i < k; ++i) {
+        pair<int, int> maxUtility = make_pair(0, 0);
+        int agentToConnectTo = 0;
+        bool firstTime = true;
+        bool strategyImproved = false;
+        int minDegreeAgent = 0;
+        int minDegree = INF;
+        for (int v = 0; v < n; ++v) {
+            if (v != u) {
+                Gaux[u][v] += 1;
+                Graph Faux(n, vector<int>(n, 0));
+                convertDirectedToUndirected(Gaux, Faux);
+                pair<int, int> actualUtility = minFlowAgentUtility(Faux, u);
+                if (actualUtility.first > maxUtility.first) {
+                    maxUtility.first = actualUtility.first;
+                    maxUtility.second  = actualUtility.second;
+                    agentToConnectTo = v;
+                    if (not firstTime)
+                        strategyImproved = true;
+                    firstTime = false;
+                }
+                else if (actualUtility.first == maxUtility.first) {
+                    if (actualUtility.second > maxUtility.second) {
+                        maxUtility.second = actualUtility.second;
+                        agentToConnectTo = v;
+                        if (not firstTime)
+                            strategyImproved = true;
+                        firstTime = false;
+                    }
+                }
+                Gaux[u][v] -= 1;
+                int deg = agentDegree(Faux, v)-1;
+                if (deg < minDegree) {
+                    deg = minDegree;
+                    minDegreeAgent = v;
+                }
+            }
+        }
+        if (not strategyImproved)
+            bestStrategy[minDegreeAgent] += 1;
+        else
+            bestStrategy[agentToConnectTo] += 1;
+    }
+    return bestStrategy;
+}
+
 bool Network::isAgentHappy(int u, vector<int>& agentBestStrategy, const string& model) {
     Graph Gaux(n, vector<int>(n, 0));
     for (int w = 0; w < n; ++w)
@@ -319,6 +373,14 @@ double Network::minimumGraphCut(Graph& F) {
     }
     return minCut;
     */
+}
+
+int Network::agentDegree(Graph& F, int u) {
+    int degree = 0;
+    for (int v = 0; v < n; ++v)
+        if (v != u)
+            degree += F[u][v];
+    return degree;
 }
 
 void Network::printAdjacencyMatrix(int g) {
@@ -439,6 +501,27 @@ void Network::convertDirectedToUndirected(Graph& G, Graph& F) {
             F[v][u] = val;
         }
     }
+}
+
+void Network::drawGraph(int g) {
+    ofstream file;
+    cout << "Writing into the file..." << endl;
+    file.open("./graphInstance.txt", ios::out | ios::trunc);
+    file << n << endl;
+    for (int u = 0; u < n; ++u) {
+        for (int v = 0; v < n; ++v) {
+            if (g == 0)
+                file << G[v][u];
+            else
+                file << F[v][u];
+        }
+        file << endl;
+    }
+    file.close();
+    cout << "Completed!" << endl;
+    cout << "Drawing and saving graph..." << endl;
+    system("python3 networkDrawer.py");
+    cout << "Completed!" << endl;
 }
 
 

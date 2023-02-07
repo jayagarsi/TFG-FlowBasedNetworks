@@ -28,12 +28,5 @@ int main() {
     G.printAdjacencyMatrix(0);
     cout << endl;
 
-    cout << "---------------------- ALGORISME DetermIINSTI -------------------" << endl;
-    bestStrategy = G.agentBestResponseMinFlowDeterministic(0);
-    G.setAgentStrategy(0, bestStrategy);
-    G.printModelsUtility("avg");
-    G.printAdjacencyMatrix(0);
-    cout << endl;
-
     G.drawGraph(0);
 }

@@ -511,9 +511,9 @@ void Network::drawGraph(int g) {
     for (int u = 0; u < n; ++u) {
         for (int v = 0; v < n; ++v) {
             if (g == 0)
-                file << G[v][u];
+                file << G[u][v];
             else
-                file << F[v][u];
+                file << F[u][v];
         }
         file << endl;
     }

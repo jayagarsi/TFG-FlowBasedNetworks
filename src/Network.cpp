@@ -25,14 +25,7 @@ Network::Network(int nAgents, int budget) {
 
 Network::~Network() { }
 
-/*----------------------- AUXILIARS -----------------------*/
-
-void Network::eraseAllConnections(Graph& G) {
-    int m = G.size();
-    for (int i = 0; i < m; ++i)
-        for (int j = 0; j < m; ++j)
-            G[i][j] = 0;
-}
+/*----------------------- FLOW COMPUTATIONS -----------------------*/
 
 // PRE: G is an adjacency matrix, s and t are vertices from G and
 //      path is variable that will store the path from s and t (if it exists)
@@ -110,8 +103,16 @@ double Network::minimumSTCut(Graph& F, int s, int t) {
             if (isInMinimumCut[i] and not isInMinimumCut[j] and F[i][j] > 0)
                 minCut += F[i][j];
 
-    return minCut;
-    
+    return minCut;   
+}
+
+/*----------------------- BEST RESPONSE MODELS -----------------------*/
+
+void Network::eraseAllConnections(Graph& G) {
+    int m = G.size();
+    for (int i = 0; i < m; ++i)
+        for (int j = 0; j < m; ++j)
+            G[i][j] = 0;
 }
 
 void Network::bestResponseMinFlow(Graph& GR, int u, int kUsed, pair<int, int>& maxUtility, vector<int>& maxStrategy) {
@@ -202,6 +203,8 @@ void Network::bestResponseAvgFlow(Graph& GR, int u, int kUsed, double& maxUtilit
     }
 }
 
+/*----------------------- RANDOMG GENERATORS -----------------------*/
+
 void Network::buildRandomGraph() {
     default_random_engine generator;
     uniform_int_distribution<int> distribution(1, k);
@@ -219,6 +222,8 @@ void Network::buildRandomGraph() {
     }
 }
 
+/*----------------------- STRATEGY CHANGES -----------------------*/
+
 void Network::buyEdge(int u, int v, int w) {
     G[u][v] += w;
     F[u][v] += w;
@@ -234,6 +239,78 @@ void Network::sellEdge(int u, int v, int w) {
     budgets[u] += w;
     //networkMinCut = minimumGraphCut();
 }
+
+bool Network::setAgentStrategy(int u, const vector<int>& st) {
+    bool someChanged = false;
+    for (int v = 0; v < n; ++v) {
+        if (G[u][v] != st[v]) someChanged = true;
+        F[u][v] -= G[u][v];
+        F[v][u] -= G[u][v];
+        G[u][v] = st[v];
+        F[u][v] += st[v];
+        F[v][u] += st[v];
+    }
+    return someChanged;
+}
+
+/*----------------------- NETWORK COMPUTATIONS -----------------------*/
+
+double Network::minimumGraphCut(Graph& F) {
+    vector<vector<int>> mat(n, vector<int>(n, 0));
+    for (int i = 0; i < n; ++i) {
+        for (int j = 0; j < n; ++j)
+            mat[i][j] = F[i][j];
+    }
+    int minCut = INT_MAX;
+    vector<vector<int>> co(n);
+    for (int i = 0; i < n; i++) co[i] = {i};
+    for (int ph = 1; ph < n; ph++) {
+        vector<int> w = mat[0];
+        size_t s = 0, t = 0;
+        for (int it = 0; it < n - ph; it++){
+            w[t] = INT_MIN;
+            s = t;
+            t = max_element(w.begin(), w.end()) - w.begin();
+            for (int i = 0; i < n; i++) w[i] += mat[t][i];
+        }
+        minCut = min(minCut, w[t] - mat[t][t]);
+        co[s].insert(co[s].end(), co[t].begin(), co[t].end());
+        for (int i = 0; i < n; i++) mat[s][i] += mat[t][i];
+        for (int i = 0; i < n; i++) mat[i][s] = mat[s][i];
+        mat[0][t] = INT_MIN;
+    }
+    return minCut;
+    /*
+    double minCut = 0.0;
+    double minUVCut = 0.0;
+    for (int u = 0; u < n; ++u) {
+        for (int v = u+1; v < n; ++v) {
+            minUVCut = minimumSTCut(u, v);
+            minCut = max(minCut, minUVCut);
+        }
+    }
+    return minCut;
+    */
+}
+
+int Network::agentDegree(Graph& F, int u) {
+    int degree = 0;
+    for (int v = 0; v < n; ++v)
+        if (v != u)
+            degree += F[u][v];
+    return degree;
+}
+
+void Network::convertDirectedToUndirected(Graph& G, Graph& F) {
+    for (int u = 0; u < n; u++) {
+        for (int v = 0; v < n; v++) {
+            int val = G[v][u] + G[u][v];
+            F[v][u] = val;
+        }
+    }
+}
+
+/*----------------------- EXHAUSTIVE SEARCH -----------------------*/
 
 vector<int> Network::agentBestResponse(int u, const string& model) {
     vector<int> bestStrategy(n);
@@ -337,51 +414,80 @@ bool Network::isAgentHappy(int u, vector<int>& agentBestStrategy, const string& 
     }
 }
 
-double Network::minimumGraphCut(Graph& F) {
-    vector<vector<int>> mat(n, vector<int>(n, 0));
-    for (int i = 0; i < n; ++i) {
-        for (int j = 0; j < n; ++j)
-            mat[i][j] = F[i][j];
-    }
-    int minCut = INT_MAX;
-    vector<vector<int>> co(n);
-    for (int i = 0; i < n; i++) co[i] = {i};
-    for (int ph = 1; ph < n; ph++) {
-        vector<int> w = mat[0];
-        size_t s = 0, t = 0;
-        for (int it = 0; it < n - ph; it++){
-            w[t] = INT_MIN;
-            s = t;
-            t = max_element(w.begin(), w.end()) - w.begin();
-            for (int i = 0; i < n; i++) w[i] += mat[t][i];
-        }
-        minCut = min(minCut, w[t] - mat[t][t]);
-        co[s].insert(co[s].end(), co[t].begin(), co[t].end());
-        for (int i = 0; i < n; i++) mat[s][i] += mat[t][i];
-        for (int i = 0; i < n; i++) mat[i][s] = mat[s][i];
-        mat[0][t] = INT_MIN;
-    }
-    return minCut;
-    /*
-    double minCut = 0.0;
-    double minUVCut = 0.0;
-    for (int u = 0; u < n; ++u) {
-        for (int v = u+1; v < n; ++v) {
-            minUVCut = minimumSTCut(u, v);
-            minCut = max(minCut, minUVCut);
+/*----------------------- GAME DYNAMICS -----------------------*/
+
+void Network::simulateGameDynamics(const string& model) {
+    cout << "Original Graph" << endl;
+    printAdjacencyMatrix(0);
+    printModelsUtility(model);
+
+    bool someoneIsUnhappy = true;
+    int cont = 0;
+    while (someoneIsUnhappy) {
+        someoneIsUnhappy = false;
+        for (int u = 0; u < n; u++) {
+            vector<int> agentBestStrategy(n);
+            bool isHappy = isAgentHappy(u, agentBestStrategy, model);
+            if (not isHappy) {
+                someoneIsUnhappy = true;
+                setAgentStrategy(u, agentBestStrategy);
+            }
         }
     }
-    return minCut;
-    */
+    cout << "-------------------------------------" << endl;
+    cout << "-------------------------------------" << endl;
+    cout << "-------------------------------------" << endl;
+    cout << "Graph changed by agents best response" << endl;
+    printAdjacencyMatrix(0);
+    printModelsUtility(model);
 }
 
-int Network::agentDegree(Graph& F, int u) {
-    int degree = 0;
+void Network::simulateGameDynamics(const string& model, const vector<int>& agentOrder) {
+
+}
+
+/*----------------------- AVG-FLOW MODEL -----------------------*/
+
+double Network::avgFlowAgentUtility(Graph& F, int u) {
+    double utility = 0.0;
     for (int v = 0; v < n; ++v)
         if (v != u)
-            degree += F[u][v];
-    return degree;
+            utility += minimumSTCut(F, v, u);
+    utility /= n-1;
+    return utility;
 }
+
+double Network::avgFlowSocialUtility(Graph& F) {
+    double socialU = 0.0;
+    for (int u = 0; u < n; ++u)
+        socialU += avgFlowAgentUtility(F, u);
+    socialU /= n;
+    return socialU;
+}
+
+/*----------------------- MIN-FLOW MODEL -----------------------*/
+
+int Network::wellConnectedNeighbours(Graph& F, int u) {
+    int numWellConnected = 0;
+    for (int v = 0;  v < n; ++v)
+        if (v != u)
+            if (minimumSTCut(F, v, u) > minimumGraphCut(F))
+                ++numWellConnected;
+    return numWellConnected;
+}
+
+pair<int, int> Network::minFlowAgentUtility(Graph& F, int u) {
+    int v1 = minimumGraphCut(F);
+    int v2 = wellConnectedNeighbours(F, u);
+    pair<int, int> utility = make_pair(v1, v2);
+    return utility;
+}
+
+double Network::minFlowSocialUtility(Graph& F) {
+    return minimumGraphCut(F);
+}
+
+/*----------------------- INPUT/OUTPUT -----------------------*/
 
 void Network::printAdjacencyMatrix(int g) {
     cout << "   ";
@@ -455,54 +561,6 @@ void Network::printModelsUtility(const string& model) {
     }
 }
 
-bool Network::setAgentStrategy(int u, const vector<int>& st) {
-    bool someChanged = false;
-    for (int v = 0; v < n; ++v) {
-        if (G[u][v] != st[v]) someChanged = true;
-        F[u][v] -= G[u][v];
-        F[v][u] -= G[u][v];
-        G[u][v] = st[v];
-        F[u][v] += st[v];
-        F[v][u] += st[v];
-    }
-    return someChanged;
-}
-
-void Network::simulateGameDynamics(const string& model) {
-    cout << "Original Graph" << endl;
-    printAdjacencyMatrix(0);
-    printModelsUtility(model);
-
-    bool someoneIsUnhappy = true;
-    int cont = 0;
-    while (someoneIsUnhappy) {
-        someoneIsUnhappy = false;
-        for (int u = 0; u < n; u++) {
-            vector<int> agentBestStrategy(n);
-            bool isHappy = isAgentHappy(u, agentBestStrategy, model);
-            if (not isHappy) {
-                someoneIsUnhappy = true;
-                setAgentStrategy(u, agentBestStrategy);
-            }
-        }
-    }
-    cout << "-------------------------------------" << endl;
-    cout << "-------------------------------------" << endl;
-    cout << "-------------------------------------" << endl;
-    cout << "Graph changed by agents best response" << endl;
-    printAdjacencyMatrix(0);
-    printModelsUtility(model);
-}
-
-void Network::convertDirectedToUndirected(Graph& G, Graph& F) {
-    for (int u = 0; u < n; u++) {
-        for (int v = 0; v < n; v++) {
-            int val = G[v][u] + G[u][v];
-            F[v][u] = val;
-        }
-    }
-}
-
 void Network::drawGraph(int g) {
     ofstream file;
     cout << "Writing into the file..." << endl;
@@ -522,46 +580,4 @@ void Network::drawGraph(int g) {
     cout << "Drawing and saving graph..." << endl;
     system("python3 networkDrawer.py");
     cout << "Completed!" << endl;
-}
-
-
-/*----------------------- AVG-FLOW MODEL -----------------------*/
-
-double Network::avgFlowAgentUtility(Graph& F, int u) {
-    double utility = 0.0;
-    for (int v = 0; v < n; ++v)
-        if (v != u)
-            utility += minimumSTCut(F, v, u);
-    utility /= n-1;
-    return utility;
-}
-
-double Network::avgFlowSocialUtility(Graph& F) {
-    double socialU = 0.0;
-    for (int u = 0; u < n; ++u)
-        socialU += avgFlowAgentUtility(F, u);
-    socialU /= n;
-    return socialU;
-}
-
-/*----------------------- MIN-FLOW MODEL -----------------------*/
-
-int Network::wellConnectedNeighbours(Graph& F, int u) {
-    int numWellConnected = 0;
-    for (int v = 0;  v < n; ++v)
-        if (v != u)
-            if (minimumSTCut(F, v, u) > minimumGraphCut(F))
-                ++numWellConnected;
-    return numWellConnected;
-}
-
-pair<int, int> Network::minFlowAgentUtility(Graph& F, int u) {
-    int v1 = minimumGraphCut(F);
-    int v2 = wellConnectedNeighbours(F, u);
-    pair<int, int> utility = make_pair(v1, v2);
-    return utility;
-}
-
-double Network::minFlowSocialUtility(Graph& F) {
-    return minimumGraphCut(F);
 }

@@ -10,6 +10,5 @@ Network.o: Network.cpp  Network.hh
 
 clean:
 	rm -f *.o
-	rm main
-	rm graphInstance.txt
-	rm graph.png
+	rm -rf __pycache__
+	rm -f main graphInstance.txt graph.png

@@ -1,4 +1,4 @@
---- GRAF CREAT PER MI COM A EXEMPLE ---
+---1 1) GRAF CREAT PER MI COM A EXEMPLE ---
     int n = 4;
     int k = 3;
     G.buyEdge(0, 1, 2);
@@ -8,7 +8,7 @@
     G.buyEdge(2, 0, 3);
     G.buyEdge(3, 0, 3);
 
---- PRIMER GRAF DE L'ARTICLE ---
+--- 2) PRIMER GRAF DE L'ARTICLE ---
     int n = 4;
     int k = 2;
     // Vertex 0 == v, 1 == x, 2 == y, z == 3
@@ -20,7 +20,7 @@
     G.buyEdge(2, 3, 1);
     G.buyEdge(3, 2, 2);
 
---- GRAF OPTIM CICLE ARTICLE ---
+--- 3) GRAF OPTIM CICLE ARTICLE ---
     int n = 6;
     int k = 2;
     G.buyEdge(0, 1, k);
@@ -30,7 +30,7 @@
     G.buyEdge(4, 5, k);
     G.buyEdge(5, 0, k);
 
---- GRAF AMB IRC DE MIN-FLOW ---
+--- 4) GRAF AMB IRC DE MIN-FLOW ---
     int n = 6;
     int k = 2;
     // Vertex a == 0, b == 1, c == 2, d == 3, f == 4, g == 5
@@ -47,7 +47,7 @@
     //vector<int> order(v, v+sizeof(v)/sizeof(int));
     //G.simulateGameDynamics(model, order);
 
---- GRAF AMB IRC DE AVG-FLOW ---
+--- 5) GRAF AMB IRC DE AVG-FLOW ---
     int n = 5;
     int k = 3;
     // Vertex a == 0, b == 1, c == 2, d == 3, e == 4
@@ -64,7 +64,7 @@
     G.buyEdge(4, 0, 1);
     G.buyEdge(4, 3, 2);
 
---- GRAF ARBRE AMB MATEIX BUDGET K ---
+--- 6) GRAF ARBRE AMB MATEIX BUDGET K ---
     n = 7;
     k = 2;
     G.buyEdge(0, 1, 1);
@@ -80,7 +80,7 @@
     # el min-cut sempre sera com a maxim k 
     # doncs amb tallar una aresta n'hi ha prou
 
---- GRAF COMPLET MATEIX BUDGET ---
+--- 7) GRAF COMPLET MATEIX BUDGET ---
     int n = 5;
     int k = n-1;
     for (int u = 0; u < n; ++u)
@@ -88,7 +88,7 @@
             if (v != u)
                 G.buyEdge(u, v, 1);
 
---- GRAF AMB MIN-CUT < min(deg(v)) \forall v \in G
+--- 8) GRAF AMB MIN-CUT < min(deg(v)) \forall v \in G
     int n = 7;
     int k = 2;
     G.buyEdge(0, 1, 1);
@@ -103,7 +103,7 @@
     G.buyEdge(6, 3, 2);
 
 
---- GRAF PER VEURE SI REDUCCIÓ A IS ÉS FACTIBLE ---
+--- 9) GRAF PER VEURE SI REDUCCIÓ A IS ÉS FACTIBLE ---
     int n = 7;
     int k = 2;
     G.buyEdge(0, 1, 2);

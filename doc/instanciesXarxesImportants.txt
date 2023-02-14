@@ -43,6 +43,10 @@
     G.buyEdge(4, 3, 1);
     G.buyEdge(5, 4, 2);
 
+    //int v[] = {4, 1, 0, 2, 3, 5};
+    //vector<int> order(v, v+sizeof(v)/sizeof(int));
+    //G.simulateGameDynamics(model, order);
+
 --- GRAF AMB IRC DE AVG-FLOW ---
     int n = 5;
     int k = 3;

@@ -127,7 +127,7 @@ void Network::bestResponseMinFlow(Graph& GR, int u, int kUsed, pair<int, int>& m
                 for (int v = 0; v < n; ++v)
                     maxStrategy[v] = GR[u][v]; 
             }
-                cout << actualUtility.first <<  " " << actualUtility.second << endl;
+                /*cout << actualUtility.first <<  " " << actualUtility.second << endl;
                 cout << " ";
                 for (int i = 0; i < maxStrategy.size(); ++i)
                     cout << i << " ";
@@ -136,7 +136,7 @@ void Network::bestResponseMinFlow(Graph& GR, int u, int kUsed, pair<int, int>& m
                 for (int i = 0; i < maxStrategy.size(); ++i)
                     cout << maxStrategy[i] << " ";
                 cout << "]" << endl;
-                cout << endl;
+                cout << endl;*/
         }
         // The min-cut has upgraded so we have to copy all values independently of wich they are
         else if (actualUtility.first > maxUtility.first) {
@@ -144,7 +144,7 @@ void Network::bestResponseMinFlow(Graph& GR, int u, int kUsed, pair<int, int>& m
             maxUtility.second = actualUtility.second;
             for (int v = 0; v < n; ++v)
                 maxStrategy[v] = GR[u][v];
-            cout << actualUtility.first <<  " " << actualUtility.second << endl;
+            /*cout << actualUtility.first <<  " " << actualUtility.second << endl;
             cout << " ";
             for (int i = 0; i < maxStrategy.size(); ++i)
                 cout << i << " ";
@@ -153,7 +153,7 @@ void Network::bestResponseMinFlow(Graph& GR, int u, int kUsed, pair<int, int>& m
             for (int i = 0; i < maxStrategy.size(); ++i)
                 cout << maxStrategy[i] << " ";
             cout << "]" << endl;
-            cout << endl;
+            cout << endl;*/
         }
     }
     else {
@@ -178,7 +178,7 @@ void Network::bestResponseAvgFlow(Graph& GR, int u, int kUsed, double& maxUtilit
             maxUtility = actualUtility;
             for (int v = 0; v < n; ++v)
             maxStrategy[v] = GR[u][v];
-            cout << actualUtility << endl;
+            /*cout << actualUtility << endl;
             cout << " ";
             for (int i = 0; i < maxStrategy.size(); ++i)
                 cout << i << " ";
@@ -187,7 +187,7 @@ void Network::bestResponseAvgFlow(Graph& GR, int u, int kUsed, double& maxUtilit
             for (int i = 0; i < maxStrategy.size(); ++i)
                 cout << maxStrategy[i] << " ";
             cout << "]" << endl;
-            cout << endl;
+            cout << endl;*/
         }
     }
     else {
@@ -443,7 +443,30 @@ void Network::simulateGameDynamics(const string& model) {
 }
 
 void Network::simulateGameDynamics(const string& model, const vector<int>& agentOrder) {
+    cout << "Original Graph" << endl;
+    printAdjacencyMatrix(0);
+    printModelsUtility(model);
 
+    bool someoneIsUnhappy = true;
+    int cont = 0;
+    while (someoneIsUnhappy) {
+        someoneIsUnhappy = false;
+        for (int i = 0; i < n; i++) {
+            int u = agentOrder[i];
+            vector<int> agentBestStrategy(n);
+            bool isHappy = isAgentHappy(u, agentBestStrategy, model);
+            if (not isHappy) {
+                someoneIsUnhappy = true;
+                setAgentStrategy(u, agentBestStrategy);
+            }
+        }
+    }
+    cout << "-------------------------------------" << endl;
+    cout << "-------------------------------------" << endl;
+    cout << "-------------------------------------" << endl;
+    cout << "Graph changed by agents best response" << endl;
+    printAdjacencyMatrix(0);
+    printModelsUtility(model);
 }
 
 /*----------------------- AVG-FLOW MODEL -----------------------*/

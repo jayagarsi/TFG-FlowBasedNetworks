@@ -33,11 +33,11 @@ if __name__ == '__main__':
     for i in range(n):
         row = list(file.readline())
         row = [int(w) for w in row[:-1]]
-        print(row)
+        #print(row)
         adjacencyMatrix.append(row)
     file.close()
 
-    print(adjacencyMatrix)
+    #print(adjacencyMatrix)
 
     G = nx.DiGraph()
     for i in range(n):

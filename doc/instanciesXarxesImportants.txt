@@ -116,7 +116,13 @@
     G.buyEdge(5, 6, 2);
     G.buyEdge(6, 3, 2);
 
-
+--- 10) GRAF CAMÍ ---
+    for (int u = 0; u < n; ++u) {
+    if (u < n-1)
+        G.buyEdge(u, u+1, k);
+    else
+        G.buyEdge(u, u-1, k);
+    }
 
 PYTHON
 

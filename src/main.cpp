@@ -3,22 +3,14 @@
 using namespace std;
 
 int main() {
-    int n = 7;
-    int k = 2;
+    int n = 4;
+    int k = 6;
     // Vertex a == 0, b == 1, c == 2, d == 3, f == 4, g == 5
     Network G(n, k);
-    string model = "avg";
-    G.buyEdge(0, 1, 2);
-    G.buyEdge(1, 2, 1);
-    G.buyEdge(1, 3, 1);
-    G.buyEdge(2, 0, 1);
-    G.buyEdge(2, 5, 1);
-    G.buyEdge(3, 4, 2);
-    G.buyEdge(4, 5, 2);
-    G.buyEdge(5, 6, 2);
-    G.buyEdge(6, 3, 2);
+    string model = "min";
+
     //G.drawGraph(0);
-    G.simulateGameDynamics(model);
+    G.simulateGameDynamicsRandomOrder(model);
 
     //int v[] = {4, 1, 0, 2, 3, 5};
     //vector<int> order(v, v+sizeof(v)/sizeof(int));

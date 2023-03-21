@@ -5,6 +5,8 @@
 #include <random>
 #include <functional>
 #include <fstream>
+#include <cstdlib>
+#include <ctime>
 
 /*----------------------- CONSTRUCTORS -----------------------*/
 
@@ -422,8 +424,9 @@ void Network::simulateGameDynamics(const string& model) {
     printModelsUtility(model);
 
     bool someoneIsUnhappy = true;
-    int cont = 0;
+    int rounds = 0;
     while (someoneIsUnhappy) {
+        rounds++;
         someoneIsUnhappy = false;
         for (int u = 0; u < n; u++) {
             vector<int> agentBestStrategy(n);
@@ -440,6 +443,7 @@ void Network::simulateGameDynamics(const string& model) {
     cout << "Graph changed by agents best response" << endl;
     printAdjacencyMatrix(0);
     printModelsUtility(model);
+    cout << "Number of rounds played: " << rounds << endl;
 }
 
 void Network::simulateGameDynamics(const string& model, const vector<int>& agentOrder) {
@@ -448,8 +452,9 @@ void Network::simulateGameDynamics(const string& model, const vector<int>& agent
     printModelsUtility(model);
 
     bool someoneIsUnhappy = true;
-    int cont = 0;
+    int rounds = 0;
     while (someoneIsUnhappy) {
+        rounds++;
         someoneIsUnhappy = false;
         for (int i = 0; i < n; i++) {
             int u = agentOrder[i];
@@ -467,6 +472,55 @@ void Network::simulateGameDynamics(const string& model, const vector<int>& agent
     cout << "Graph changed by agents best response" << endl;
     printAdjacencyMatrix(0);
     printModelsUtility(model);
+    cout << "Number of rounds played: " << rounds << endl;
+}
+
+// Fisher-Yates algorithm for choosing the agents at random at each round
+void Network::simulateGameDynamicsRandomOrder(const string& model) {
+    cout << "Original Graph" << endl;
+    printAdjacencyMatrix(0);
+    printModelsUtility(model);
+
+    // Initialize random seed
+    srand(time(0));
+
+    bool someoneIsUnhappy = true;
+    int rounds = 0;
+    while (someoneIsUnhappy) {
+        rounds++;
+        someoneIsUnhappy = false;
+        cout << endl << "Round " << rounds << endl;
+        // Set vector with the agents
+        vector<int> order(n);
+        for (int i = 0; i < n; ++i) order[i] = i;
+
+        // Shuffle agents by the Fisher-Yates algorithm
+        for (int i = order.size()-1; i > 0; i--) {
+            // Choose one agent at random from 0 to i from the list
+            int u = rand() % (i+1);
+
+            // Push selected agent to the end to not take it again
+            swap(order[i], order[u]);
+        }
+
+        // The order is taken randomly now
+        for (int i = 0; i < order.size(); i++) {
+            int u = order[i];
+            vector<int> agentBestStrategy(n);
+            bool isHappy = isAgentHappy(u, agentBestStrategy, model);
+            if (not isHappy) {
+                someoneIsUnhappy = true;
+                setAgentStrategy(u, agentBestStrategy);
+            }
+        }
+    }
+    cout << "-------------------------------------" << endl;
+    cout << "-------------------------------------" << endl;
+    cout << "-------------------------------------" << endl;
+    cout << "Graph changed by agents best response" << endl;
+    printAdjacencyMatrix(0);
+    printModelsUtility(model);
+    cout << "Number of rounds played: " << rounds << endl;
 }
 
 /*----------------------- AVG-FLOW MODEL -----------------------*/

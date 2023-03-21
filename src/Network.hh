@@ -55,6 +55,7 @@ class Network {
         // Game Dynamics
         void simulateGameDynamics(const string& model);
         void simulateGameDynamics(const string& model, const vector<int>& agentOrder);
+        void simulateGameDynamicsRandomOrder(const string& model);
 
         // AVG-FLOW Model
         double avgFlowAgentUtility(Graph& F, int u);

@@ -34,7 +34,7 @@ class Network {
         ~Network();
     
         // Random Generators
-        void buildRandomGraph();
+        void buildRandomGraph(int n, int m, int k, int s, double p, const string& type);
         
         // Strategy Changes
         void buyEdge(int u, int v, int w);
@@ -70,7 +70,10 @@ class Network {
         void printAdjacencyMatrix(int g);
         void printAdjacencyMatrix(const Graph& G);
         void printModelsUtility(const string& model);
-        void drawGraph(int g);
+        void drawGraph(int g, const string& filename);
+
+        // Auxiliar
+        bool isCycleOptimumGraph();
 
 };
 

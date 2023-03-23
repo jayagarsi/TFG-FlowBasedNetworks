@@ -205,23 +205,28 @@ void Network::bestResponseAvgFlow(Graph& GR, int u, int kUsed, double& maxUtilit
     }
 }
 
-/*----------------------- RANDOMG GENERATORS -----------------------*/
+/*----------------------- RANDOM GENERATORS -----------------------*/
 
-void Network::buildRandomGraph() {
-    default_random_engine generator;
-    uniform_int_distribution<int> distribution(1, k);
-    auto dice = bind(distribution, generator);
-    for (int u = 0; u < n; u++) {
-        for (int v = 0; v < n ; v++) {
-            int capacityBought = dice();
-            if (capacityBought > budgets[u])
-                capacityBought = budgets[u];
-            G[u][v] = capacityBought;
-            F[u][v] += G[u][v];
-            F[v][u] += G[u][v];
-            budgets[u] -= capacityBought;
-        }
+void Network::buildRandomGraph(int n, int m, int k, int s, double p, const string& type) {
+    fstream file;
+    cout << "Writing into the file..." << endl;
+    file.open("./randomGraphInstance.txt", ios::out | ios::trunc);
+    file << n << endl << m << endl << k << endl << s << endl << p << endl << type << endl;
+    cout << "Finished writing!" << endl;
+    file.close();
+
+    string command = "python3 randomGenerator.py";
+    int status = system(command.c_str());
+    if (status < 0 or not WIFEXITED(status)) {
+        cout << "Something went wrong while executing " << command << endl;
+        exit(1);
     }
+    file.open("./randomGraphInstance.txt", ios::in);
+    for (int i = 0; i < n; i++)
+        for (int j = 0; j < n; j++)
+            file >> G[i][j];
+    file.close();
+    convertDirectedToUndirected(G, F);
 }
 
 /*----------------------- STRATEGY CHANGES -----------------------*/
@@ -482,7 +487,8 @@ void Network::simulateGameDynamicsRandomOrder(const string& model) {
     printModelsUtility(model);
 
     // Initialize random seed
-    srand(time(0));
+    // srand(time(0));      // uncomment this for truly random
+    srand(200);          // uncomment this to be able to repeat the same random experiments
 
     bool someoneIsUnhappy = true;
     int rounds = 0;
@@ -638,10 +644,11 @@ void Network::printModelsUtility(const string& model) {
     }
 }
 
-void Network::drawGraph(int g) {
+void Network::drawGraph(int g, const string& filename) {
     ofstream file;
+    string path = "./" + filename + ".txt";
     cout << "Writing into the file..." << endl;
-    file.open("./graphInstance.txt", ios::out | ios::trunc);
+    file.open(path, ios::out | ios::trunc);
     file << n << endl;
     for (int u = 0; u < n; ++u) {
         for (int v = 0; v < n; ++v) {
@@ -655,6 +662,22 @@ void Network::drawGraph(int g) {
     file.close();
     cout << "Completed!" << endl;
     cout << "Drawing and saving graph..." << endl;
-    system("python3 networkDrawer.py");
-    cout << "Completed!" << endl;
+    string command = "python3 networkDrawer.py " + filename;
+    int status = system(command.c_str());
+    if (status < 0 or not WIFEXITED(status)) {
+        cout << "Something went wrong when executing " << command << endl;
+        exit(1);
+    }
+    else cout << "Completed!" << endl;
+}
+
+/*----------------------- AUXILIAR -----------------------*/
+
+bool Network::isCycleOptimumGraph() {
+    bool isCycle = true;
+    if (G[n-1][0] <= 0) isCycle = false;
+    for (int u = 0; u < n-1 and isCycle; u++)
+        if (G[u][u+1] <= 0)
+            isCycle = false;
+    return isCycle;
 }

@@ -3,14 +3,18 @@
 using namespace std;
 
 int main() {
-    int n = 4;
-    int k = 6;
+    int n = 100;
+    int k = 1;
     // Vertex a == 0, b == 1, c == 2, d == 3, f == 4, g == 5
     Network G(n, k);
-    string model = "min";
+    string model = "avg";
+    string graphType = "sparse";
+    G.buildRandomGraph(n, n, k, 200, 0, graphType);
+    G.drawGraph(0, "originalGraph");
+    G.simulateGameDynamics(model);
+    //G.simulateGameDynamicsRandomOrder(model);
+    G.drawGraph(0, "dynamicsGraph");
 
-    //G.drawGraph(0);
-    G.simulateGameDynamicsRandomOrder(model);
 
     //int v[] = {4, 1, 0, 2, 3, 5};
     //vector<int> order(v, v+sizeof(v)/sizeof(int));
@@ -25,6 +29,4 @@ int main() {
     G.printAdjacencyMatrix(0);
     cout << endl;
     */
-
-    G.drawGraph(0);
 }

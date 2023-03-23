@@ -1,8 +1,9 @@
 import networkx as nx
 import my_draw_networx_edge_labels as my_nx
 import matplotlib.pyplot as plt
+import sys
 
-def drawDirectedNetwork(G):
+def drawDirectedNetwork(G, filename):
     #https://stackoverflow.com/questions/22785849/drawing-multiple-edges-between-two-nodes-with-networkx
     pos=nx.spring_layout(G,seed=5)
     fig, ax = plt.subplots()
@@ -24,10 +25,14 @@ def drawDirectedNetwork(G):
     straight_edge_labels = {edge: edge_weights[edge] for edge in straight_edges}
     my_nx.my_draw_networkx_edge_labels(G, pos, ax=ax, edge_labels=curved_edge_labels,rotate=False,rad = arc_rad)
     nx.draw_networkx_edge_labels(G, pos, ax=ax, edge_labels=straight_edge_labels,rotate=False)
-    plt.savefig("graph.png")
+    plt.savefig(filename + ".png")
 
 if __name__ == '__main__':
-    file = open("graphInstance.txt", "r")
+
+    ### Read graph to draw
+    filename = sys.argv[1]
+    path = "./" + filename + ".txt"
+    file = open(path, "r")
     n = int(file.readline())
     adjacencyMatrix = []
     for i in range(n):
@@ -37,12 +42,12 @@ if __name__ == '__main__':
         adjacencyMatrix.append(row)
     file.close()
 
-    #print(adjacencyMatrix)
-
+    ### Convert graph to nx instance and draw it
     G = nx.DiGraph()
     for i in range(n):
         for j in range(n):
             edgeWeight = adjacencyMatrix[i][j]
             if (edgeWeight != 0):
                 G.add_edge(i, j, weight = edgeWeight)
-    drawDirectedNetwork(G)
+
+    drawDirectedNetwork(G, filename)

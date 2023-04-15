@@ -3,30 +3,36 @@
 using namespace std;
 
 int main() {
-    int n = 100;
-    int k = 1;
+    int n = 35;
+    int m = 20;
+    int k = 2;
+    int s = 200;
+    int agent = 0;
+    double p = 0.50;
+    string model = "min";
+    string graphType = "erdos";
     // Vertex a == 0, b == 1, c == 2, d == 3, f == 4, g == 5
     Network G(n, k);
-    string model = "avg";
-    string graphType = "sparse";
-    G.buildRandomGraph(n, n, k, 200, 0, graphType);
+    /*G.buyEdge(0, 1, 2);
+    G.buyEdge(1, 2, 2);
+    G.buyEdge(2, 3, 2);
+    G.buyEdge(3, 4, 2);
+    G.buyEdge(4, 1, 2);
+    
+    G.simulateGameDynamicsRandomOrder(model);
+    G.drawGraph(0, "equilibriumGraphRand2");*/
+
+    
+    /*G.buildRandomGraph(n, m, k, s, p, graphType);
+    G.computeAndApplyAgentBestResponse(agent, model);
+*/
+    /*
+    G.buildRandomGraph(n, m, k, s, p, graphType);
     G.drawGraph(0, "originalGraph");
     G.simulateGameDynamics(model);
-    //G.simulateGameDynamicsRandomOrder(model);
     G.drawGraph(0, "dynamicsGraph");
-
-
-    //int v[] = {4, 1, 0, 2, 3, 5};
-    //vector<int> order(v, v+sizeof(v)/sizeof(int));
-    //G.simulateGameDynamics(model, order);
-    /*G.printAdjacencyMatrix(0);
-    G.printModelsUtility(model);
-    vector<int> bestStrategy = G.agentBestResponse(0, model);
-    /*for (int i = 0; i < bestStrategy.size(); ++i)
-        cout << bestStrategy[i] << endl;
-    G.setAgentStrategy(0, bestStrategy);
-    G.printModelsUtility(model);
-    G.printAdjacencyMatrix(0);
-    cout << endl;
     */
+    //G.simulateGameDynamicsRandomOrder(model);
+    // G.drawGraph(0, "dynamicsGraph");
+    // cout << (G.isCycleOptimumGraph() ? "The graph generated is an optimum cycle" : "The graph is not a cycle") << endl;
 }

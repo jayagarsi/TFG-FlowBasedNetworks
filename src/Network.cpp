@@ -7,6 +7,7 @@
 #include <fstream>
 #include <cstdlib>
 #include <ctime>
+#include <string>
 
 /*----------------------- CONSTRUCTORS -----------------------*/
 
@@ -117,7 +118,7 @@ void Network::eraseAllConnections(Graph& G) {
             G[i][j] = 0;
 }
 
-void Network::bestResponseMinFlow(Graph& GR, int u, int kUsed, pair<int, int>& maxUtility, vector<int>& maxStrategy) {
+void Network::bestResponseMinFlow(Graph& GR, int u, int kUsed, int lastVisited, pair<int, int>& maxUtility, vector<int>& maxStrategy) {
     if (kUsed == k) {
         Graph FR(n, vector<int>(n, 0));
         convertDirectedToUndirected(GR, FR);
@@ -159,11 +160,11 @@ void Network::bestResponseMinFlow(Graph& GR, int u, int kUsed, pair<int, int>& m
         }
     }
     else {
-        for (int v = 0; v < n; ++v) {
+        for (int v = lastVisited; v < n; ++v) {
             if (v != u) {
                 GR[u][v] += 1;
                 kUsed += 1;
-                bestResponseMinFlow(GR, u, kUsed, maxUtility, maxStrategy);
+                bestResponseMinFlow(GR, u, kUsed, v, maxUtility, maxStrategy);
                 kUsed -= 1;
                 GR[u][v] -= 1;
             }
@@ -171,7 +172,7 @@ void Network::bestResponseMinFlow(Graph& GR, int u, int kUsed, pair<int, int>& m
     }
 }
 
-void Network::bestResponseAvgFlow(Graph& GR, int u, int kUsed, double& maxUtility, vector<int>& maxStrategy) {
+void Network::bestResponseAvgFlow(Graph& GR, int u, int kUsed, int lastVisited, double& maxUtility, vector<int>& maxStrategy) {
     if (kUsed == k) {
         Graph FR(n, vector<int>(n, 0));
         convertDirectedToUndirected(GR, FR);
@@ -193,11 +194,11 @@ void Network::bestResponseAvgFlow(Graph& GR, int u, int kUsed, double& maxUtilit
         }
     }
     else {
-        for (int v = 0; v < n; ++v) {
+        for (int v = lastVisited; v < n; ++v) {
             if (v != u) {
                 GR[u][v] += 1;
                 kUsed += 1;
-                bestResponseAvgFlow(GR, u, kUsed, maxUtility, maxStrategy);
+                bestResponseAvgFlow(GR, u, kUsed, v, maxUtility, maxStrategy);
                 kUsed -= 1;
                 GR[u][v] -= 1;
             }
@@ -206,7 +207,18 @@ void Network::bestResponseAvgFlow(Graph& GR, int u, int kUsed, double& maxUtilit
 }
 
 /*----------------------- RANDOM GENERATORS -----------------------*/
-
+/**
+ * @brief Based on the number of nodes, the number of edges and the type of random graph
+ * to build, the graph generates different random graphs. This is done by writing the
+ * parameters into a file and a python3 script reads them to generate the graphs
+ * 
+ * @param n number of agents
+ * @param m number of adges
+ * @param k budget
+ * @param s seed of the experiments
+ * @param p probability (only for Gn,p graphs)
+ * @param type 'gnm' | 'erdos' | 'gnp'
+ */
 void Network::buildRandomGraph(int n, int m, int k, int s, double p, const string& type) {
     fstream file;
     cout << "Writing into the file..." << endl;
@@ -231,6 +243,14 @@ void Network::buildRandomGraph(int n, int m, int k, int s, double p, const strin
 
 /*----------------------- STRATEGY CHANGES -----------------------*/
 
+/**
+ * @brief Buys or adss weight to an edge between two agents. 
+ * The first agent passed defines the owner ot the edge
+ * 
+ * @param u source node
+ * @param v destiniy node
+ * @param w weight of the edge
+ */
 void Network::buyEdge(int u, int v, int w) {
     G[u][v] += w;
     F[u][v] += w;
@@ -239,6 +259,14 @@ void Network::buyEdge(int u, int v, int w) {
     //networkMinCut = minimumGraphCut();
 }
 
+/**
+ * @brief Removes or takes weight from an edge between two nodes.
+ * The first agent passed defines the owner of that edge
+ * 
+ * @param u 
+ * @param v 
+ * @param w 
+ */
 void Network::sellEdge(int u, int v, int w) {
     G[u][v] -= w;
     F[u][v] -= w;
@@ -247,6 +275,14 @@ void Network::sellEdge(int u, int v, int w) {
     //networkMinCut = minimumGraphCut();
 }
 
+/**
+ * @brief Changes the strategy of an agent by the vector passed.
+ * 
+ * @param u agent
+ * @param st new strategy
+ * @return true the agent strategy changed
+ * @return false the agent's strategy hasn't changed
+ */
 bool Network::setAgentStrategy(int u, const vector<int>& st) {
     bool someChanged = false;
     for (int v = 0; v < n; ++v) {
@@ -262,6 +298,12 @@ bool Network::setAgentStrategy(int u, const vector<int>& st) {
 
 /*----------------------- NETWORK COMPUTATIONS -----------------------*/
 
+/**
+ * @brief Returns the value of the global minimum cut of the passed graph
+ * 
+ * @param F undirected graph
+ * @return double value of the minimum cut
+ */
 double Network::minimumGraphCut(Graph& F) {
     vector<vector<int>> mat(n, vector<int>(n, 0));
     for (int i = 0; i < n; ++i) {
@@ -300,6 +342,13 @@ double Network::minimumGraphCut(Graph& F) {
     */
 }
 
+/**
+ * @brief Return the degree of an agent
+ * 
+ * @param F undirected graph
+ * @param u agent
+ * @return int degree of the agent in the graph
+ */
 int Network::agentDegree(Graph& F, int u) {
     int degree = 0;
     for (int v = 0; v < n; ++v)
@@ -308,6 +357,13 @@ int Network::agentDegree(Graph& F, int u) {
     return degree;
 }
 
+/**
+ * @brief Converts an directed graph into an undirected one where the 
+ * weight of multiple edges corresponde to the sum of both
+ * 
+ * @param G input directed graph
+ * @param F output undirected graph
+ */
 void Network::convertDirectedToUndirected(Graph& G, Graph& F) {
     for (int u = 0; u < n; u++) {
         for (int v = 0; v < n; v++) {
@@ -319,6 +375,13 @@ void Network::convertDirectedToUndirected(Graph& G, Graph& F) {
 
 /*----------------------- EXHAUSTIVE SEARCH -----------------------*/
 
+/**
+ * @brief Returns the best response of an agent
+ * 
+ * @param u agent
+ * @param model 'min' | 'avg'
+ * @return vector<int> best strategy for agent u
+ */
 vector<int> Network::agentBestResponse(int u, const string& model) {
     vector<int> bestStrategy(n);
     Graph Gaux(n, vector<int>(n, 0));
@@ -328,15 +391,30 @@ vector<int> Network::agentBestResponse(int u, const string& model) {
     
     if (model == "min") {
         pair<int, int> maxUtility = make_pair(0, 0);
-        bestResponseMinFlow(Gaux, u, 0, maxUtility, bestStrategy);
+        bestResponseMinFlow(Gaux, u, 0, 0, maxUtility, bestStrategy);
     }
     else {
         double maxUtility = 0.0;
-        bestResponseAvgFlow(Gaux, u, 0, maxUtility, bestStrategy);
+        bestResponseAvgFlow(Gaux, u, 0, 0, maxUtility, bestStrategy);
     }
     return bestStrategy;
 }
 
+void Network::computeAndApplyAgentBestResponse(int u, const string& model) {
+    printAdjacencyMatrix(0);
+    printModelsUtility(model);
+    drawGraph(0, "originalGraph");
+    vector<int> agentBestStrategy = agentBestResponse(u, model);
+    setAgentStrategy(u, agentBestStrategy);
+    string agent = to_string(u);
+    string title = model + "bestResponseAgent-" + agent;
+    printModelsUtility(model);
+    printAdjacencyMatrix(0);
+    drawGraph(0, title);
+}
+
+/*
+// NO SE SI ES BORRARA AIXO
 vector<int> Network::agentBestResponseMinFlowDeterministic(int u) {
         Graph Gaux(n, vector<int>(n, 0));
     for (int w = 0; w < n; ++w)
@@ -389,7 +467,18 @@ vector<int> Network::agentBestResponseMinFlowDeterministic(int u) {
     }
     return bestStrategy;
 }
+*/
 
+/**
+ * @brief Checks if the agent passed is happy by computing it's best response
+ * and checking if it's better or not than it's actual strategy
+ * 
+ * @param u agent
+ * @param agentBestStrategy outpu best strategy for agent u
+ * @param model 'min' | 'avg'
+ * @return true if agent is happy
+ * @return false if agent can still improve
+ */
 bool Network::isAgentHappy(int u, vector<int>& agentBestStrategy, const string& model) {
     Graph Gaux(n, vector<int>(n, 0));
     for (int w = 0; w < n; ++w)
@@ -400,7 +489,7 @@ bool Network::isAgentHappy(int u, vector<int>& agentBestStrategy, const string& 
     if (model == "min") {
         auto actualUtility = minFlowAgentUtility(F, u);
         pair<int, int> maxUtility = make_pair(0, 0);
-        bestResponseMinFlow(Gaux, u, 0, maxUtility, agentBestStrategy);
+        bestResponseMinFlow(Gaux, u, 0, 0, maxUtility, agentBestStrategy);
         // If agent is happy there is no better move than the actual
         // so then the maximum utility is less or equal than the actual one
         bool isHappy = false;                                       // the agent will be unhappy if the maximum minCut is bigger than the actual
@@ -412,7 +501,7 @@ bool Network::isAgentHappy(int u, vector<int>& agentBestStrategy, const string& 
     else {
         auto actualUtility = avgFlowAgentUtility(F, u);
         double maxUtility = 0.0;
-        bestResponseAvgFlow(Gaux, u, 0, maxUtility, agentBestStrategy);
+        bestResponseAvgFlow(Gaux, u, 0, 0, maxUtility, agentBestStrategy);
         // If agent is happy there is no better move than the actual
         // so then the maximum utility is less or equal than the actual one
         bool isHappy = (maxUtility <= actualUtility);
@@ -423,6 +512,13 @@ bool Network::isAgentHappy(int u, vector<int>& agentBestStrategy, const string& 
 
 /*----------------------- GAME DYNAMICS -----------------------*/
 
+/**
+ * @brief Simulates a deterministic Game Dynamics where the agents play
+ * in an ascending order: [0, 1, 2, ..., n-1, n]. The game keeps playing
+ * until all agents are happy
+ * 
+ * @param model 'min' |'avg'
+ */
 void Network::simulateGameDynamics(const string& model) {
     cout << "Original Graph" << endl;
     printAdjacencyMatrix(0);
@@ -451,6 +547,13 @@ void Network::simulateGameDynamics(const string& model) {
     cout << "Number of rounds played: " << rounds << endl;
 }
 
+/**
+ * @brief Simulates a deterministic Game Dynamics where the agents play
+ * in the order passed as input. The game keeps playing until all agents are happy
+ * 
+ * @param model 'min' | 'avg'
+ * @param agentOrder vector of agent order
+ */
 void Network::simulateGameDynamics(const string& model, const vector<int>& agentOrder) {
     cout << "Original Graph" << endl;
     printAdjacencyMatrix(0);
@@ -481,6 +584,14 @@ void Network::simulateGameDynamics(const string& model, const vector<int>& agent
 }
 
 // Fisher-Yates algorithm for choosing the agents at random at each round
+/**
+ * @brief Simulates a deterministic Game Dynamics where the agents play
+ * in a random order choosen by the Fisher-Yates algorithm. 
+ * The game keeps playing until all agents are happy and at every round
+ * the order is re-calculated by the algorithm
+ * 
+ * @param model 'min' | 'avg'
+ */
 void Network::simulateGameDynamicsRandomOrder(const string& model) {
     cout << "Original Graph" << endl;
     printAdjacencyMatrix(0);
@@ -531,6 +642,14 @@ void Network::simulateGameDynamicsRandomOrder(const string& model) {
 
 /*----------------------- AVG-FLOW MODEL -----------------------*/
 
+/**
+ * @brief Returns the utility of an agent in the Avg-FlowNCG model.
+ * The utility is the average of the minimum cut between u and all other agents
+ * 
+ * @param F undirected graph
+ * @param u agent
+ * @return double agent utility of u
+ */
 double Network::avgFlowAgentUtility(Graph& F, int u) {
     double utility = 0.0;
     for (int v = 0; v < n; ++v)
@@ -540,6 +659,13 @@ double Network::avgFlowAgentUtility(Graph& F, int u) {
     return utility;
 }
 
+/**
+ * @brief Returns the social utility of a network in the Avg-FlowNCG model
+ * The social utility is the average of the utility of all agents
+ * 
+ * @param F undirected graph
+ * @return double social utility of the network
+ */
 double Network::avgFlowSocialUtility(Graph& F) {
     double socialU = 0.0;
     for (int u = 0; u < n; ++u)
@@ -550,28 +676,59 @@ double Network::avgFlowSocialUtility(Graph& F) {
 
 /*----------------------- MIN-FLOW MODEL -----------------------*/
 
-int Network::wellConnectedNeighbours(Graph& F, int u) {
+/**
+ * @brief Returns the number of well-connected neighbours of an agent. This
+ * are the number of agents that have a minimum s-t cut to u greater than the
+ * global min-cut of the network.
+ * 
+ * @param F undirected graph
+ * @param u agent
+ * @return int number of well-connected neighbours
+ */
+int Network::wellConnectedNeighbours(Graph& F, int u, int minCut) {
     int numWellConnected = 0;
     for (int v = 0;  v < n; ++v)
         if (v != u)
-            if (minimumSTCut(F, v, u) > minimumGraphCut(F))
+            if (minimumSTCut(F, v, u) > minCut)
                 ++numWellConnected;
     return numWellConnected;
 }
 
+/**
+ * @brief Returns the utility of an agent in the Min-FlowNCG model
+ * The utility is a vector <u1, u2> where u1 is the networ minimum cut and
+ * u2 the number of well-connected neighbors of u.
+ * 
+ * @param F undirected graph
+ * @param u agent
+ * @return pair<int, int> agent utility of u
+ */
 pair<int, int> Network::minFlowAgentUtility(Graph& F, int u) {
     int v1 = minimumGraphCut(F);
-    int v2 = wellConnectedNeighbours(F, u);
+    int v2 = wellConnectedNeighbours(F, u, v1);
     pair<int, int> utility = make_pair(v1, v2);
     return utility;
 }
 
+/**
+ * @brief Returns the social utility of a network in the Min-FlowNCG model
+ * The utility is the minimum cut of the network.
+ * 
+ * @param F undirected graph
+ * @return double social utility of the network
+ */
 double Network::minFlowSocialUtility(Graph& F) {
     return minimumGraphCut(F);
 }
 
 /*----------------------- INPUT/OUTPUT -----------------------*/
 
+/**
+ * @brief Prints through the terminal by cout the adjacency matrix
+ * of the attributes in the class
+ * 
+ * @param g '0' for directed graph | '1' for undirected graph
+ */
 void Network::printAdjacencyMatrix(int g) {
     cout << "   ";
     for (int v = 0; v < n; ++v)
@@ -592,6 +749,12 @@ void Network::printAdjacencyMatrix(int g) {
     }
 }
 
+/**
+ * @brief Prints through the terminal by cout the adjacency matrix
+ * of the attributes in the class
+ * 
+ * @param G graph to print it's adcjacency
+ */
 void Network::printAdjacencyMatrix(const Graph& G) {
     for (int v = 0; v < n; ++v)
         cout << " " << v;
@@ -608,6 +771,12 @@ void Network::printAdjacencyMatrix(const Graph& G) {
     }
 }
 
+/**
+ * @brief Prints through the terminal by cout the social and
+ * agent utility of the Min-FlowNCG and Avg-FLowNCG models
+ * 
+ * @param model 'min' | 'avg'
+ */
 void Network::printModelsUtility(const string& model) {
     if (model == "min") {
         cout << "minFlow-NCG Model" << endl;
@@ -644,6 +813,13 @@ void Network::printModelsUtility(const string& model) {
     }
 }
 
+/**
+ * @brief Draws the graph by writing it into a file and calling
+ * a python scrip that draws and saves it 
+ * 
+ * @param g '0' for directed graph | '1' for undirected graph
+ * @param filename name of the file to save the graph drawing into
+ */
 void Network::drawGraph(int g, const string& filename) {
     ofstream file;
     string path = "./" + filename + ".txt";
@@ -672,12 +848,25 @@ void Network::drawGraph(int g, const string& filename) {
 }
 
 /*----------------------- AUXILIAR -----------------------*/
-
+// NO FUNCIONA
 bool Network::isCycleOptimumGraph() {
-    bool isCycle = true;
-    if (G[n-1][0] <= 0) isCycle = false;
-    for (int u = 0; u < n-1 and isCycle; u++)
-        if (G[u][u+1] <= 0)
+    bool isCycle = (G[n-1][0] > 0);
+    int u = 0;
+    while (u < n-1 and isCycle) {
+        if (G[u][u+1])
             isCycle = false;
+        u++;
+    }
     return isCycle;
+}
+
+vector<int> Network::numberOfEdges(int g) {
+    vector<int> edges(k, 0);
+    for (int u = 0; u < n; u++) {
+        for (int v = 0; v < n; v++) {
+            int capacity = g == 0 ? G[u][v] : F[u][v];
+            ++edges[capacity];
+        }
+    }
+    return edges;
 }

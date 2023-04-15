@@ -24,8 +24,8 @@ class Network {
 
         // Best Response Models
         void eraseAllConnections(Graph& G);
-        void bestResponseMinFlow(Graph& GR, int u, int kUsed, pair<int, int>& maxUtility, vector<int>& maxStrategy);
-        void bestResponseAvgFlow(Graph& GR, int u, int kUsed, double& maxUtility, vector<int>& maxStrategy);
+        void bestResponseMinFlow(Graph& GR, int u, int kUsed, int lastVisited, pair<int, int>& maxUtility, vector<int>& maxStrategy);
+        void bestResponseAvgFlow(Graph& GR, int u, int kUsed, int lastVisited, double& maxUtility, vector<int>& maxStrategy);
 
     public:
         // Constructors
@@ -46,12 +46,13 @@ class Network {
         int agentDegree(Graph& F, int u);
         void convertDirectedToUndirected(Graph& G, Graph& F);
         
-        // Exhaustive Search
+        // Best Response
         vector<int> agentBestResponse(int u, const string& model);
-        vector<int> agentBestResponseMinFlowDeterministic(int u);
-        vector<int> agentBestResponseAvgFlowDeterministic(int u);
+        void computeAndApplyAgentBestResponse(int u, const string& model);
         bool isAgentHappy(int u, vector<int>& agentBestStrategy, const string& model);
-
+        // vector<int> agentBestResponseMinFlowDeterministic(int u);
+        // vector<int> agentBestResponseAvgFlowDeterministic(int u);
+        
         // Game Dynamics
         void simulateGameDynamics(const string& model);
         void simulateGameDynamics(const string& model, const vector<int>& agentOrder);
@@ -62,7 +63,7 @@ class Network {
         double avgFlowSocialUtility(Graph& F);
 
         // MIN-FLOW Model
-        int wellConnectedNeighbours(Graph& F, int u);
+        int wellConnectedNeighbours(Graph& F, int u, int minCut);
         pair<int, int> minFlowAgentUtility(Graph& F, int u);
         double minFlowSocialUtility(Graph& F);
 
@@ -74,7 +75,7 @@ class Network {
 
         // Auxiliar
         bool isCycleOptimumGraph();
-
+        vector<int> numberOfEdges(int g);
 };
 
 #endif

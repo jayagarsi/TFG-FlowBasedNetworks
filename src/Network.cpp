@@ -13,8 +13,8 @@
 
 Network::Network() { 
     G = Graph(0, vector<int>(0, 0));
-    networkMinCut = 0;
     F = Graph(0, vector<int>(0, 0));
+    networkMinCut = 0;
 }
 
 Network::Network(int nAgents, int budget) {
@@ -30,10 +30,22 @@ Network::~Network() { }
 
 /*----------------------- FLOW COMPUTATIONS -----------------------*/
 
-// PRE: G is an adjacency matrix, s and t are vertices from G and
-//      path is variable that will store the path from s and t (if it exists)
-// POST: True if there is an s-t path, False otherwise
+/**
+ * @brief Traverses a graph represented by and adjacecny matrix wih the Breadth-First Search algorithm.
+ * Besides traversing the graph, the algorithm also tells us if there is a path starting from node s that ends in t. 
+ * In path this possible rout from s to t is stored  (if it exists) and in minPathCapacity the value 
+ * of the smallest capacity between all edges in the path.
+ * 
+ * @param residualG matrix to traverse
+ * @param s starting node
+ * @param t finishing node
+ * @param path path between s and t (might be empty)
+ * @param minPathCapacity minimum capacity of the path
+ * @return true if the path exists
+ * @return false otherwise
+ */
 bool Network::BFS(const Graph& residualG, int s, int t, vector<int>& path, int& minPathCapacity) {
+    int n = residualG.size();
     vector<bool> visited(n, false);
     queue<int> q;
     q.push(s);
@@ -60,16 +72,36 @@ bool Network::BFS(const Graph& residualG, int s, int t, vector<int>& path, int& 
     //return visited[t];
 }
 
-void Network::DFS(const Graph& residualG, int s, vector<bool>& isInMinimumCut) {
+/**
+ * @brief Traverses a graph represented by and adjacecny matrix wih the Depth-First Search algorithm.
+ * The algorithm is tuned to save in an array those nodes that belong to the minimum cut. The array starts
+ * from node s
+ * 
+ * @param residualG input graph
+ * @param n number of nodes in the graph
+ * @param s startoff node
+ * @param isInMinimumCut array of bools that indicate for each node if they are in the minimum cut. It is assumed that it is initialized as all false
+ */
+void Network::DFS(const Graph& residualG, int n, int s, vector<bool>& isInMinimumCut) {
     isInMinimumCut[s] = true;
     for (int u = 0; u < n; ++u) {
         if (residualG[s][u] and not isInMinimumCut[u])
-            DFS(residualG, u, isInMinimumCut);
+            DFS(residualG, n, u, isInMinimumCut);
     }
 }
 
-double Network::minimumSTCut(Graph& F, int s, int t) {
-
+/**
+ * @brief Computes the minimum cut between two nodes in a graph by using the Edmond-Karp algorithm.
+ * It also saves those nodes that form the minimum cut.
+ * 
+ * @param F input graph
+ * @param minCutNodes array of pairs of integers with the nodes that belong to the minimum cut
+ * @param s source node
+ * @param t sink node
+ * @return int value of the minimum cut of the network, which is equal to the maximum flow.
+ */
+int Network::minimumSTCut(Graph& F, vector<pair<int, int>> minCutNodes, int s, int t) {
+    int n = F.size();
     Graph residualG(n, vector<int>(n));
     for (int u = 0; u < n; ++u)
         for (int v = 0; v < n; ++v)
@@ -98,19 +130,26 @@ double Network::minimumSTCut(Graph& F, int s, int t) {
     }
 
     vector<bool> isInMinimumCut(n, false);
-    DFS(residualG, s, isInMinimumCut);
+    DFS(residualG, residualG.size(), s, isInMinimumCut);
 
-    double minCut = 0.0;
+    int minCut = 0;
     for (int i = 0; i < n; ++i)
         for (int j = 0; j < n; ++j)
-            if (isInMinimumCut[i] and not isInMinimumCut[j] and F[i][j] > 0)
+            if (isInMinimumCut[i] and not isInMinimumCut[j] and F[i][j] > 0) {
+                pair<int, int> edge = make_pair(i, j);
+                minCutNodes.push_back(edge);
                 minCut += F[i][j];
-
+            }
     return minCut;   
 }
 
 /*----------------------- BEST RESPONSE MODELS -----------------------*/
 
+/**
+ * @brief Removes all edges from a graph
+ * 
+ * @param G input graph
+ */
 void Network::eraseAllConnections(Graph& G) {
     int m = G.size();
     for (int i = 0; i < m; ++i)
@@ -118,6 +157,17 @@ void Network::eraseAllConnections(Graph& G) {
             G[i][j] = 0;
 }
 
+/**
+ * @brief Algorithm to compute the Best Response of an agent in the MinFlow-NCG model by using
+ * an exhaustive search.
+ * 
+ * @param GR input graph
+ * @param u agent
+ * @param kUsed budget used until now
+ * @param lastVisited last seen node (this is to avoid seeing repeated strategies)
+ * @param maxUtility value of the maximum utility found until now for agent u
+ * @param maxStrategy strategy that gives the maximum utiliy to agent u
+ */
 void Network::bestResponseMinFlow(Graph& GR, int u, int kUsed, int lastVisited, pair<int, int>& maxUtility, vector<int>& maxStrategy) {
     if (kUsed == k) {
         Graph FR(n, vector<int>(n, 0));
@@ -172,6 +222,17 @@ void Network::bestResponseMinFlow(Graph& GR, int u, int kUsed, int lastVisited, 
     }
 }
 
+/**
+ * @brief Algorithm to compute the Best Response of an agent in the AvgFlow-NCG model by using
+ * an exhaustive search.
+ * 
+ * @param GR input graph
+ * @param u agent
+ * @param kUsed budget used until now
+ * @param lastVisited last seen node (this is to avoid seeing repeated strategies)
+ * @param maxUtility value of the maximum utility found until now for agent u
+ * @param maxStrategy strategy that gives the maximum utiliy to agent u
+ */
 void Network::bestResponseAvgFlow(Graph& GR, int u, int kUsed, int lastVisited, double& maxUtility, vector<int>& maxStrategy) {
     if (kUsed == k) {
         Graph FR(n, vector<int>(n, 0));
@@ -205,6 +266,96 @@ void Network::bestResponseAvgFlow(Graph& GR, int u, int kUsed, int lastVisited, 
         }
     }
 }
+
+/*----------------------- PRIVATE AUXILIAR -----------------------*/
+
+/**
+ * @brief Merges a given vector. This is to be used with the MergeSort algorithm
+ * only.
+ * 
+ * @param v input array
+ * @param ini starting point
+ * @param mid middle point
+ * @param end ending point
+ */
+void Network::merge(vector<int>& v, int ini, int mid, int end) {
+    vector<int> temp;
+    int n1 = mid - ini + 1;
+    int n2 = end - mid;
+
+    vector<int> L(n1);
+    vector<int> R(n2);
+ 
+    for (int i = 0; i < n1; i++) {
+        L[i] = v[ini + i];
+    }
+    for (int j = 0; j < n2; j++) {
+        R[j] = v[mid + 1 + j];
+    }
+ 
+    int i = 0;
+    int j = 0;
+    int k = ini;
+ 
+    while (i < n1 and j < n2) {
+        if (agentDegree(F, L[i]) <= agentDegree(F, R[j])) {
+            v[k] = L[i];
+            i++;
+        }
+        else {
+            v[k] = R[j];
+            j++;
+        }
+        k++;
+    }
+ 
+    while (i < n1) {
+        v[k] = L[i];
+        i++;
+        k++;
+    }
+ 
+    while (j < n2) {
+        v[k] = R[j];
+        j++;
+        k++;
+    }
+}
+
+/**
+ * @brief Algorithm to sort a given vector by the Merge Sort algorithm depending
+ * on the degree of the agents in the vector. It is assumed that this vector represent
+ * a set of agents from a graph G
+ * 
+ * @param v vector to sort
+ * @param ini starting point
+ * @param end ending point
+ */
+void Network::mergeSortByDegree(vector<int>& v, int ini, int end) {
+    if (ini < end) {
+        int mid = (ini + end)/2;
+        mergeSortByDegree(v, ini, mid);
+        mergeSortByDegree(v, mid+1, end);
+        merge(v, ini, mid, end);
+    }
+}
+
+/**
+ * @brief Shuffles a given array randomly with the Fisher-Yates algorithm.
+ * Every agent has the same probability of being picked at each step
+ * 
+ * @param order array to be randomly shuffled
+ */
+void Network::shuffleArray(vector<int>& order) {
+    for (int i = order.size()-1; i > 0; i--) {
+        // Choose one agent at random from 0 to i from the list
+        int u = rand() % (i+1);
+
+        // Push selected agent to the end to not take it again
+        swap(order[i], order[u]);
+    }
+}
+
 
 /*----------------------- RANDOM GENERATORS -----------------------*/
 /**
@@ -296,6 +447,42 @@ bool Network::setAgentStrategy(int u, const vector<int>& st) {
     return someChanged;
 }
 
+/**
+ * @brief Adds new agents to the implicit graph, at the end of it.
+ * 
+ * @param na number of agents to be added
+ */
+void Network::addNewAgents(int na) {
+    for (int i = 0; i < na; ++i) {
+        vector<int> newRow(n, 0);
+        G.push_back(newRow);
+        F.push_back(newRow);
+        n++;
+        for (int u = 0; u < n; ++u) {
+            G[u].push_back(0);
+            F[u].push_back(0);
+        }
+    }
+}
+
+/**
+ * @brief Remove agents from the graph. It must be noted that they are removed
+ * from the ending of the graph, to make it easier to implement.
+ * 
+ * @param na number of agents to be removed.
+ */
+void Network::removeAgents(int na) {
+    for (int i = 0; i < na; ++i) {
+        G.pop_back();
+        F.pop_back();
+        n++;
+        for (int u = 0; u < n; ++u) {
+            G[u].pop_back();
+            F[u].pop_back();
+        }
+    }
+}
+
 /*----------------------- NETWORK COMPUTATIONS -----------------------*/
 
 /**
@@ -304,7 +491,8 @@ bool Network::setAgentStrategy(int u, const vector<int>& st) {
  * @param F undirected graph
  * @return double value of the minimum cut
  */
-double Network::minimumGraphCut(Graph& F) {
+int Network::minimumGraphCut(Graph& F) {
+    int n = F.size();
     vector<vector<int>> mat(n, vector<int>(n, 0));
     for (int i = 0; i < n; ++i) {
         for (int j = 0; j < n; ++j)
@@ -352,8 +540,24 @@ double Network::minimumGraphCut(Graph& F) {
 int Network::agentDegree(Graph& F, int u) {
     int degree = 0;
     for (int v = 0; v < n; ++v)
-        if (v != u)
+        if (v != u) {
             degree += F[u][v];
+        }
+    return degree;
+}
+
+/**
+ * @brief Return the degree of an agent
+ * 
+ * @param g '0' for directed graph | '1' for undirected graph
+ * @param u agent
+ * @return int degree of the agent in the graph
+ */
+int Network::agentDegree(int g, int u) {
+    int degree = 0;
+    for (int v = 0; v < n; ++v)
+        if (v != u)
+            degree += g == 0 ? G[u][v] : F[u][v];
     return degree;
 }
 
@@ -369,6 +573,60 @@ void Network::convertDirectedToUndirected(Graph& G, Graph& F) {
         for (int v = 0; v < n; v++) {
             int val = G[v][u] + G[u][v];
             F[v][u] = val;
+        }
+    }
+}
+
+/**
+ * @brief Computes a maximal j-cluster of the implicit graph. The algorithm works on any case
+ * but there might be graphs that don't have a j-cluster. We know though, that every NE has 
+ * a (k+1)-cluster, so any NE graph with j = k+1 will always have at least one (k+1)-cluster
+ * 
+ * @param j minimum edge connectivity of the cluster
+ * @return vector<int> list of nodes that belong to a j-cluster
+ */
+vector<int> Network::computeMaximalCluster(int j) {
+    vector<int> maximalCluster;
+    for (int i = 0; i < n; ++i) maximalCluster.push_back(i);
+    mergeSortByDegree(maximalCluster, 0, n-1);
+    int removedAgent = 0;
+    bool found = false;
+    while (not found) {
+        Graph H = Graph(maximalCluster.size(), vector<int>(maximalCluster.size(), 0));
+        inducedSubgraph(F, H, maximalCluster, 1);
+        int minCut = minimumGraphCut(H);
+        if (minCut >= j) {
+            removedAgent = maximalCluster[0];
+            maximalCluster.erase(maximalCluster.begin());
+        }
+        else if (maximalCluster.size() < 2) {
+            found = true;
+        }
+        else {
+            maximalCluster.insert(maximalCluster.begin(), removedAgent);
+            found = true;
+        }
+    }
+    return maximalCluster;
+}
+
+/**
+ * @brief Computes the induced graph by a set of nodes of a given graph
+ * 
+ * @param F input graph
+ * @param H induced graph
+ * @param inducingNodes nodes that induce the graph
+ * @param g 0 == directed | 1 == undirected
+ */
+void Network::inducedSubgraph(const Graph& F, Graph& H, vector<int>& inducingNodes, int g) {
+    int numberOfNodes = inducingNodes.size();
+    for (int i = 0; i < numberOfNodes; i++) {
+        for (int j = 0; j < numberOfNodes; j++) {
+            int capacity = F[inducingNodes[i]][inducingNodes[j]];
+            if (capacity > 0) {
+                H[i][j] = capacity;
+                if (g == 1) H[j][i] = capacity;
+            }
         }
     }
 }
@@ -400,6 +658,12 @@ vector<int> Network::agentBestResponse(int u, const string& model) {
     return bestStrategy;
 }
 
+/**
+ * @brief Method to quickly compute and apply the best response of an agent
+ * 
+ * @param u agent
+ * @param model 'min' | 'avg'
+ */
 void Network::computeAndApplyAgentBestResponse(int u, const string& model) {
     printAdjacencyMatrix(0);
     printModelsUtility(model);
@@ -416,7 +680,7 @@ void Network::computeAndApplyAgentBestResponse(int u, const string& model) {
 /*
 // NO SE SI ES BORRARA AIXO
 vector<int> Network::agentBestResponseMinFlowDeterministic(int u) {
-        Graph Gaux(n, vector<int>(n, 0));
+    Graph Gaux(n, vector<int>(n, 0));
     for (int w = 0; w < n; ++w)
         for (int v = 0; v < n; ++v)
             if (w != u) Gaux[w][v] = G[w][v];
@@ -528,6 +792,7 @@ void Network::simulateGameDynamics(const string& model) {
     int rounds = 0;
     while (someoneIsUnhappy) {
         rounds++;
+        cout << endl << "Round " << rounds << endl;
         someoneIsUnhappy = false;
         for (int u = 0; u < n; u++) {
             vector<int> agentBestStrategy(n);
@@ -563,6 +828,7 @@ void Network::simulateGameDynamics(const string& model, const vector<int>& agent
     int rounds = 0;
     while (someoneIsUnhappy) {
         rounds++;
+        cout << endl << "Round " << rounds << endl;
         someoneIsUnhappy = false;
         for (int i = 0; i < n; i++) {
             int u = agentOrder[i];
@@ -583,7 +849,6 @@ void Network::simulateGameDynamics(const string& model, const vector<int>& agent
     cout << "Number of rounds played: " << rounds << endl;
 }
 
-// Fisher-Yates algorithm for choosing the agents at random at each round
 /**
  * @brief Simulates a deterministic Game Dynamics where the agents play
  * in a random order choosen by the Fisher-Yates algorithm. 
@@ -591,15 +856,16 @@ void Network::simulateGameDynamics(const string& model, const vector<int>& agent
  * the order is re-calculated by the algorithm
  * 
  * @param model 'min' | 'avg'
+ * @param seed  seed for the random order generator
  */
-void Network::simulateGameDynamicsRandomOrder(const string& model) {
+void Network::simulateGameDynamicsRandomOrder(const string& model, int seed) {
     cout << "Original Graph" << endl;
     printAdjacencyMatrix(0);
     printModelsUtility(model);
 
     // Initialize random seed
     // srand(time(0));      // uncomment this for truly random
-    srand(200);          // uncomment this to be able to repeat the same random experiments
+    srand(seed);          // uncomment this to be able to repeat the same random experiments
 
     bool someoneIsUnhappy = true;
     int rounds = 0;
@@ -610,15 +876,7 @@ void Network::simulateGameDynamicsRandomOrder(const string& model) {
         // Set vector with the agents
         vector<int> order(n);
         for (int i = 0; i < n; ++i) order[i] = i;
-
-        // Shuffle agents by the Fisher-Yates algorithm
-        for (int i = order.size()-1; i > 0; i--) {
-            // Choose one agent at random from 0 to i from the list
-            int u = rand() % (i+1);
-
-            // Push selected agent to the end to not take it again
-            swap(order[i], order[u]);
-        }
+        shuffleArray(order);
 
         // The order is taken randomly now
         for (int i = 0; i < order.size(); i++) {
@@ -651,10 +909,12 @@ void Network::simulateGameDynamicsRandomOrder(const string& model) {
  * @return double agent utility of u
  */
 double Network::avgFlowAgentUtility(Graph& F, int u) {
+    int n = F.size();
     double utility = 0.0;
+    vector<pair<int,int>> minCutNodes;
     for (int v = 0; v < n; ++v)
         if (v != u)
-            utility += minimumSTCut(F, v, u);
+            utility += minimumSTCut(F, minCutNodes, v, u);
     utility /= n-1;
     return utility;
 }
@@ -667,6 +927,7 @@ double Network::avgFlowAgentUtility(Graph& F, int u) {
  * @return double social utility of the network
  */
 double Network::avgFlowSocialUtility(Graph& F) {
+    int n = F.size();
     double socialU = 0.0;
     for (int u = 0; u < n; ++u)
         socialU += avgFlowAgentUtility(F, u);
@@ -686,10 +947,12 @@ double Network::avgFlowSocialUtility(Graph& F) {
  * @return int number of well-connected neighbours
  */
 int Network::wellConnectedNeighbours(Graph& F, int u, int minCut) {
+    int n = F.size();
     int numWellConnected = 0;
+    vector<pair<int,int>> minCutNodes;
     for (int v = 0;  v < n; ++v)
-        if (v != u)
-            if (minimumSTCut(F, v, u) > minCut)
+        if (v != u) 
+            if (minimumSTCut(F, minCutNodes, v, u) > minCut)
                 ++numWellConnected;
     return numWellConnected;
 }
@@ -717,7 +980,7 @@ pair<int, int> Network::minFlowAgentUtility(Graph& F, int u) {
  * @param F undirected graph
  * @return double social utility of the network
  */
-double Network::minFlowSocialUtility(Graph& F) {
+int Network::minFlowSocialUtility(Graph& F) {
     return minimumGraphCut(F);
 }
 
@@ -756,6 +1019,7 @@ void Network::printAdjacencyMatrix(int g) {
  * @param G graph to print it's adcjacency
  */
 void Network::printAdjacencyMatrix(const Graph& G) {
+    int n = G.size();
     for (int v = 0; v < n; ++v)
         cout << " " << v;
     cout << endl << "    ";
@@ -780,7 +1044,44 @@ void Network::printAdjacencyMatrix(const Graph& G) {
 void Network::printModelsUtility(const string& model) {
     if (model == "min") {
         cout << "minFlow-NCG Model" << endl;
+        int minCut = 0.0;
+        for (int u = 0; u < n; ++u) {
+            auto agentUtility = minFlowAgentUtility(F, u);
+            minCut = agentUtility.first;
+            cout << " - Agent " << u << ": (" << agentUtility.first << ", " << agentUtility.second << ")" << endl;
+        }
+        cout << " - Social Utility: " << minCut << endl; 
+    }
+    else if (model == "avg") {
+        cout << "avgFlow-NCG Model" << endl;
+        for (int u = 0; u < n; ++u)
+            cout << " - Agent " << u << ": " << avgFlowAgentUtility(F, u) << endl;
+        cout << " - Social Utility: " << avgFlowSocialUtility(F) << endl;
+        cout << "------------------------" << endl;
+    }
+    else {
+        cout << "avgFlow-NCG Model" << endl;
+        for (int u = 0; u < n; ++u)
+            cout << " - Agent " << u << ": " << avgFlowAgentUtility(F, u) << endl;
+        cout << " - Social Utility: " << avgFlowSocialUtility(F) << endl;
+        cout << "------------------------" << endl;
+
+        cout << "minFlow-NCG Model" << endl;
         double minCut = 0.0;
+        for (int u = 0; u < n; ++u) {
+            auto agentUtility = minFlowAgentUtility(F, u);
+            minCut = agentUtility.first;
+            cout << " - Agent " << u << ": (" << agentUtility.first << ", " << agentUtility.second << ")" << endl;
+        }
+        cout << " - Social Utility: " << minCut << endl;
+    }
+}
+
+void Network::printModelsUtility(Graph& F, const string& model) {
+    int n = F.size();
+    if (model == "min") {
+        cout << "minFlow-NCG Model" << endl;
+        int minCut = 0.0;
         for (int u = 0; u < n; ++u) {
             auto agentUtility = minFlowAgentUtility(F, u);
             minCut = agentUtility.first;
@@ -821,6 +1122,31 @@ void Network::printModelsUtility(const string& model) {
  * @param filename name of the file to save the graph drawing into
  */
 void Network::drawGraph(int g, const string& filename) {
+    writeGraphToFile(g, filename);
+    cout << "Drawing and saving graph..." << endl;
+    string command = "python3 networkDrawer.py " + filename + " " + to_string(g);
+    int status = system(command.c_str());
+    if (status < 0 or not WIFEXITED(status)) {
+        cout << "Something went wrong when executing " << command << endl;
+        exit(1);
+    }
+    else cout << "Completed!" << endl;
+}
+
+void Network::readGraphFromFile(const string& filename) {
+    ifstream file;
+    string path = "./" + filename + ".txt";
+    file.open(path);
+    for (int u = 0; u < n; ++u) {
+        for(int v = 0; v < n; ++v) {
+            int w = int(file.get());
+            G[u][v] = w;
+        }
+    }
+    convertDirectedToUndirected(G, F);
+}
+
+void Network::writeGraphToFile(int g, const string& filename) {
     ofstream file;
     string path = "./" + filename + ".txt";
     cout << "Writing into the file..." << endl;
@@ -829,22 +1155,14 @@ void Network::drawGraph(int g, const string& filename) {
     for (int u = 0; u < n; ++u) {
         for (int v = 0; v < n; ++v) {
             if (g == 0)
-                file << G[u][v];
+                file << G[u][v] << " ";
             else
-                file << F[u][v];
+                file << F[u][v] << " ";
         }
         file << endl;
     }
     file.close();
     cout << "Completed!" << endl;
-    cout << "Drawing and saving graph..." << endl;
-    string command = "python3 networkDrawer.py " + filename;
-    int status = system(command.c_str());
-    if (status < 0 or not WIFEXITED(status)) {
-        cout << "Something went wrong when executing " << command << endl;
-        exit(1);
-    }
-    else cout << "Completed!" << endl;
 }
 
 /*----------------------- AUXILIAR -----------------------*/
@@ -862,10 +1180,21 @@ bool Network::isCycleOptimumGraph() {
 
 vector<int> Network::numberOfEdges(int g) {
     vector<int> edges(k, 0);
-    for (int u = 0; u < n; u++) {
-        for (int v = 0; v < n; v++) {
-            int capacity = g == 0 ? G[u][v] : F[u][v];
-            ++edges[capacity];
+    if (g == 0) {
+        for (int u = 0; u < n; u++) {
+            for (int v = 0; v < n; v++) {
+                int capacity = G[u][v];
+                if (capacity) ++edges[capacity-1];  // the vector starts on 0 but the weights on 1
+            }
+        }
+    }
+    else {
+        for (int u = 0; u < n; u++) {
+            // In the undirected graph the data is repeated
+            for (int v = u+1; v < n; v++) {
+                int capacity = F[u][v];
+                if (capacity) ++edges[capacity-1];
+            }
         }
     }
     return edges;

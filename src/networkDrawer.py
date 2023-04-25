@@ -27,27 +27,41 @@ def drawDirectedNetwork(G, filename):
     nx.draw_networkx_edge_labels(G, pos, ax=ax, edge_labels=straight_edge_labels,rotate=False)
     plt.savefig(filename + ".png")
 
+def drawUndirectedNetwork(G, filename):
+    pos=nx.spring_layout(G) # pos = nx.nx_agraph.graphviz_layout(G)
+    nx.draw_networkx(G,pos)
+    labels = nx.get_edge_attributes(G,'weight')
+    nx.draw_networkx_edge_labels(G,pos,edge_labels=labels)
+    plt.savefig(filename + ".png")
+
 if __name__ == '__main__':
 
     ### Read graph to draw
     filename = sys.argv[1]
+    graphType = int(sys.argv[2])
     path = "./" + filename + ".txt"
     file = open(path, "r")
     n = int(file.readline())
     adjacencyMatrix = []
     for i in range(n):
-        row = list(file.readline())
-        row = [int(w) for w in row[:-1]]
-        #print(row)
+        row = file.readline()
+        row = [int(w) for w in row[:-1].split()]
+        # print(row)
         adjacencyMatrix.append(row)
     file.close()
 
     ### Convert graph to nx instance and draw it
-    G = nx.DiGraph()
+    if graphType == 0:
+        G = nx.DiGraph()
+    else:
+        G = nx.Graph()
     for i in range(n):
         for j in range(n):
             edgeWeight = adjacencyMatrix[i][j]
             if (edgeWeight != 0):
                 G.add_edge(i, j, weight = edgeWeight)
 
-    drawDirectedNetwork(G, filename)
+    if graphType == 0:
+        drawDirectedNetwork(G, filename)
+    else:
+        drawUndirectedNetwork(G, filename)

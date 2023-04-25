@@ -124,6 +124,15 @@
         G.buyEdge(u, u-1, k);
     }
 
+--- 11) GRAF INVENTAT ---
+    G.buyEdge(0, 1, 2);
+    G.buyEdge(1, 0, 1);
+    G.buyEdge(1, 2, 1);
+    G.buyEdge(2, 4, 2);
+    G.buyEdge(3, 2, 1);
+    G.buyEdge(3, 4, 1);
+    G.buyEdge(4, 1, 2);
+
 PYTHON
 
 --- GRAF CICLE AMB BUDGETS DIFERENTS ---

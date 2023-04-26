@@ -24,14 +24,14 @@ void printMaximalCluster(Network& G, int k) {
 int main() {
     // Parameters to the simulation
     int n = 10;
-    int m = 25;
-    int k = 12;
+    int m = 3;
+    int k = 9;
     int s = 200;
     int agent = 0;
     int agentsToAdd = 1;
     double p = 0.5;
     string model = "avg";
-    string graphType = "erdos";
+    string graphType = "gnm";
     int direction = 1;              // 0 === directed, 1 === undirected
 
     Network G(n, k);
@@ -41,7 +41,7 @@ int main() {
     cout << "------------ ORIGINAL GRAPH --------------" << endl;
     cout << "------------------------------------------" << endl;
     cout << "------------------------------------------" << endl;
-    // G.buildRandomGraph(n, m, k, s, p, graphType);
+    G.buildRandomGraph(n, m, k, s, p, graphType);
     
     // printCapacityVector(G, 0);
     // printCapacityVector(G, 1);
@@ -52,8 +52,8 @@ int main() {
     cout << "----------- ORIGINAL DYNAMICS ------------" << endl;
     cout << "------------------------------------------" << endl;
     cout << "------------------------------------------" << endl;
-    G.simulateGameDynamicsRandomOrder(model, s);
-    // G.simulateGameDynamics(model);
+    // G.simulateGameDynamicsRandomOrder(model, s);
+    G.simulateGameDynamics(model);
     G.drawGraph(direction, "dynamicsGraph");
     printCapacityVector(G, 0);
     printCapacityVector(G, 1);

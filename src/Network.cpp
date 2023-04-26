@@ -589,7 +589,7 @@ vector<int> Network::computeMaximalCluster(int j) {
     vector<int> maximalCluster;
     for (int i = 0; i < n; ++i) maximalCluster.push_back(i);
     mergeSortByDegree(maximalCluster, 0, n-1);
-    int removedAgent = 0;
+    int removedAgent = -1;
     bool found = false;
     while (not found) {
         Graph H = Graph(maximalCluster.size(), vector<int>(maximalCluster.size(), 0));
@@ -603,7 +603,7 @@ vector<int> Network::computeMaximalCluster(int j) {
             found = true;
         }
         else {
-            maximalCluster.insert(maximalCluster.begin(), removedAgent);
+            if (removedAgent != -1) maximalCluster.insert(maximalCluster.begin(), removedAgent);
             found = true;
         }
     }

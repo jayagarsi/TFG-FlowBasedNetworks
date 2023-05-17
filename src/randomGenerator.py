@@ -11,14 +11,13 @@ if __name__ == '__main__':
     s = int(file.readline())
     p = float(file.readline())
     type = file.readline()[:-1]
-
     file.close()
 
     G = nx.DiGraph()
     ### Generate different types of graph based on the input
     if type == "gnm":
         G = nx.gnm_random_graph(n, m, s, True)
-    elif type == "erdos":
+    elif type == "gnp":
         G = nx.erdos_renyi_graph(n, p, s, True)
 
     ### Generate the adjacency matrix

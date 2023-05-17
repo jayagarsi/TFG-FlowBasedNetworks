@@ -64,18 +64,20 @@ class Network {
         vector<int> agentBestResponseAvgFlowDeterministic(int u);
         
         // Game Dynamics
-        void simulateGameDynamics(const string& model);
-        void simulateGameDynamics(const string& model, const vector<int>& agentOrder);
-        void simulateGameDynamicsRandomOrder(const string& model, int seed);
+        int simulateGameDynamics(const string& model);
+        int simulateGameDynamics(const string& model, const vector<int>& agentOrder);
+        int simulateGameDynamicsRandomOrder(const string& model, int seed);
 
         // AVG-FLOW Model
         double avgFlowAgentUtility(Graph& F, int u);
         double avgFlowSocialUtility(Graph& F);
+        double avgFlowSocialUtility();
 
         // MIN-FLOW Model
         int wellConnectedNeighbours(Graph& F, int u, int minCut);
         pair<int, int> minFlowAgentUtility(Graph& F, int u);
         int minFlowSocialUtility(Graph& F);
+        int minFlowSocialUtility();
 
         // Input/Output
         void printAdjacencyMatrix(int g);
@@ -85,6 +87,7 @@ class Network {
         void drawGraph(int g, const string& filename);
         void readGraphFromFile(const string& filename);
         void writeGraphToFile(int g, const string& filename);
+        void appendResultsToFile(const string& filename);
 
         // Auxiliar
         bool isCycleOptimumGraph();

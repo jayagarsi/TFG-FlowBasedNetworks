@@ -475,7 +475,7 @@ void Network::removeAgents(int na) {
     for (int i = 0; i < na; ++i) {
         G.pop_back();
         F.pop_back();
-        n++;
+        n--;
         for (int u = 0; u < n; ++u) {
             G[u].pop_back();
             F[u].pop_back();
@@ -782,12 +782,14 @@ bool Network::isAgentHappy(int u, vector<int>& agentBestStrategy, const string& 
  * until all agents are happy
  * 
  * @param model 'min' |'avg'
+ * @return number of rounds played
  */
-void Network::simulateGameDynamics(const string& model) {
+int Network::simulateGameDynamics(const string& model) {
+    /*
     cout << "Original Graph" << endl;
     printAdjacencyMatrix(0);
     printModelsUtility(model);
-
+    */
     bool someoneIsUnhappy = true;
     int rounds = 0;
     while (someoneIsUnhappy) {
@@ -803,6 +805,7 @@ void Network::simulateGameDynamics(const string& model) {
             }
         }
     }
+    /*
     cout << "-------------------------------------" << endl;
     cout << "-------------------------------------" << endl;
     cout << "-------------------------------------" << endl;
@@ -810,6 +813,8 @@ void Network::simulateGameDynamics(const string& model) {
     printAdjacencyMatrix(0);
     printModelsUtility(model);
     cout << "Number of rounds played: " << rounds << endl;
+    */
+    return rounds;
 }
 
 /**
@@ -819,11 +824,12 @@ void Network::simulateGameDynamics(const string& model) {
  * @param model 'min' | 'avg'
  * @param agentOrder vector of agent order
  */
-void Network::simulateGameDynamics(const string& model, const vector<int>& agentOrder) {
+int Network::simulateGameDynamics(const string& model, const vector<int>& agentOrder) {
+    /*
     cout << "Original Graph" << endl;
     printAdjacencyMatrix(0);
     printModelsUtility(model);
-
+    */
     bool someoneIsUnhappy = true;
     int rounds = 0;
     while (someoneIsUnhappy) {
@@ -840,6 +846,7 @@ void Network::simulateGameDynamics(const string& model, const vector<int>& agent
             }
         }
     }
+    /*
     cout << "-------------------------------------" << endl;
     cout << "-------------------------------------" << endl;
     cout << "-------------------------------------" << endl;
@@ -847,6 +854,8 @@ void Network::simulateGameDynamics(const string& model, const vector<int>& agent
     printAdjacencyMatrix(0);
     printModelsUtility(model);
     cout << "Number of rounds played: " << rounds << endl;
+    */
+    return rounds;
 }
 
 /**
@@ -858,11 +867,7 @@ void Network::simulateGameDynamics(const string& model, const vector<int>& agent
  * @param model 'min' | 'avg'
  * @param seed  seed for the random order generator
  */
-void Network::simulateGameDynamicsRandomOrder(const string& model, int seed) {
-    cout << "Original Graph" << endl;
-    printAdjacencyMatrix(0);
-    printModelsUtility(model);
-
+int Network::simulateGameDynamicsRandomOrder(const string& model, int seed) {
     // Initialize random seed
     // srand(time(0));      // uncomment this for truly random
     srand(seed);          // uncomment this to be able to repeat the same random experiments
@@ -889,13 +894,7 @@ void Network::simulateGameDynamicsRandomOrder(const string& model, int seed) {
             }
         }
     }
-    cout << "-------------------------------------" << endl;
-    cout << "-------------------------------------" << endl;
-    cout << "-------------------------------------" << endl;
-    cout << "Graph changed by agents best response" << endl;
-    printAdjacencyMatrix(0);
-    printModelsUtility(model);
-    cout << "Number of rounds played: " << rounds << endl;
+    return rounds;
 }
 
 /*----------------------- AVG-FLOW MODEL -----------------------*/
@@ -927,6 +926,22 @@ double Network::avgFlowAgentUtility(Graph& F, int u) {
  * @return double social utility of the network
  */
 double Network::avgFlowSocialUtility(Graph& F) {
+    int n = F.size();
+    double socialU = 0.0;
+    for (int u = 0; u < n; ++u)
+        socialU += avgFlowAgentUtility(F, u);
+    socialU /= n;
+    return socialU;
+}
+
+/**
+ * @brief Returns the social utility of a network in the Avg-FlowNCG model
+ * The social utility is the average of the utility of all agents.
+ * The utility is computed on the implicit graph
+ * 
+ * @return double social utility of the network
+ */
+double Network::avgFlowSocialUtility() {
     int n = F.size();
     double socialU = 0.0;
     for (int u = 0; u < n; ++u)
@@ -981,6 +996,17 @@ pair<int, int> Network::minFlowAgentUtility(Graph& F, int u) {
  * @return double social utility of the network
  */
 int Network::minFlowSocialUtility(Graph& F) {
+    return minimumGraphCut(F);
+}
+
+/**
+ * @brief Returns the social utility of a network in the Min-FlowNCG model
+ * The utility is the minimum cut of the network.
+ * The utility is computed on the implicit graph
+ * 
+ * @return double social utility of the network
+ */
+int Network::minFlowSocialUtility() {
     return minimumGraphCut(F);
 }
 

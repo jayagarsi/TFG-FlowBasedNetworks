@@ -1,4 +1,5 @@
 #include "Network.hh"
+#include <string>
 using namespace std;
 
 void printCapacityVector(Network& G, int direction) {
@@ -23,17 +24,21 @@ void printMaximalCluster(Network& G, int k) {
 
 int main() {
     // Parameters to the simulation
+    
     int n = 10;
-    int m = 3;
-    int k = 9;
+    int m = 34;
+    int k = 12;
     int s = 200;
-    int agent = 0;
-    int agentsToAdd = 1;
-    double p = 0.5;
-    string model = "avg";
+    int agentsToAdd = 30;
+    int agentsToRemove = 17;
+    double p = 0.25;
+    string model = "min";
     string graphType = "gnm";
-    int direction = 1;              // 0 === directed, 1 === undirected
-
+    string modification = "none";            // red == reeduction, exp == expansion, none
+    string order = "ra";                    // rr === Round Robin, ra === Random, pr === Personal
+    int direction = 1;                      // 0  === directed, 1 === undirected
+    int numRounds = 0;
+    
     Network G(n, k);
    
     cout << "------------------------------------------" << endl;
@@ -41,52 +46,84 @@ int main() {
     cout << "------------ ORIGINAL GRAPH --------------" << endl;
     cout << "------------------------------------------" << endl;
     cout << "------------------------------------------" << endl;
-    G.buildRandomGraph(n, m, k, s, p, graphType);
-    
-    // printCapacityVector(G, 0);
-    // printCapacityVector(G, 1);
+    if (graphType == "gnm" or graphType == "gnp") 
+        G.buildRandomGraph(n, m, k, s, p, graphType);
+
     G.drawGraph(direction, "originalGraph");
+    G.printModelsUtility(model);
+    printCapacityVector(G, direction);
     
     cout << "------------------------------------------" << endl;
     cout << "------------------------------------------" << endl;
     cout << "----------- ORIGINAL DYNAMICS ------------" << endl;
     cout << "------------------------------------------" << endl;
     cout << "------------------------------------------" << endl;
-    // G.simulateGameDynamicsRandomOrder(model, s);
-    G.simulateGameDynamics(model);
-    G.drawGraph(direction, "dynamicsGraph");
+    if (order == "ra") numRounds = G.simulateGameDynamicsRandomOrder(model, s);
+    else if (order == "rr") numRounds = G.simulateGameDynamics(model);
+    else if (order == "pr") {
+        vector<int> agentOrder(n);
+        for (int i = 0; i < n; ++i)
+            agentOrder[i] = n-i-1;
+        numRounds = G.simulateGameDynamics(model, agentOrder);
+    }
+    string name = "originalDynamics-" + order + "-" + model + "Flow";
+    G.drawGraph(direction, name);
+    G.printModelsUtility(model);
+    cout << "Number of rounds played: " << numRounds << endl;
     printCapacityVector(G, 0);
     printCapacityVector(G, 1);
-    printMaximalCluster(G, k);
+    printMaximalCluster(G, k+1);
 
-    // UNCOMMENT FOR EXPANDING THE NETWORK WHEN IN NE
-    /*
-    cout << "------------------------------------------" << endl;
-    cout << "------------------------------------------" << endl;
-    cout << "-------- EXPANDED GRAPH DYNAMICS ---------" << endl;
-    cout << "------------------------------------------" << endl;
-    cout << "------------------------------------------" << endl;
-    G.addNewAgents(agentsToAdd);
-    G.simulateGameDynamicsRandomOrder(model, s);
-    G.drawGraph(direction, "expandedDynamicsGraph");
-    edgeCapacity = G.numberOfEdges(direction);
-    printCapacityVector(edgeCapacity, direction);
-    */
+    if (modification == "exp") {
+        cout << "------------------------------------------" << endl;
+        cout << "------------------------------------------" << endl;
+        cout << "-------- EXPANDED GRAPH DYNAMICS ---------" << endl;
+        cout << "------------------------------------------" << endl;
+        cout << "------------------------------------------" << endl;
+        n = n + agentsToAdd;
+        G.addNewAgents(agentsToAdd);
+        if (order == "ra") numRounds = G.simulateGameDynamicsRandomOrder(model, s);
+        else if (order == "rr") numRounds = G.simulateGameDynamics(model);
+        else if (order == "pr") {
+            vector<int> agentOrder(n);
+            for (int i = 0; i < n; ++i)
+                agentOrder[i] = n-i-1;
+            numRounds = G.simulateGameDynamics(model, agentOrder);
+        }
+        name = "expandedDynamics-" + order + "-" + model + "Flow-n" + to_string(agentsToAdd);  
+        G.drawGraph(direction, name);
+        G.printModelsUtility(model);
+        cout << "Number of rounds played: " << numRounds << endl;
+        printCapacityVector(G, 0);
+        printCapacityVector(G, 1);
+        printMaximalCluster(G, k+1);
+    }
 
-    // UNCOMMENT FOR REDUCING THE NETWORK WHEN IN NE
-   /*
-    cout << "------------------------------------------" << endl;
-    cout << "------------------------------------------" << endl;
-    cout << "--------- REDUCED GRAPH DYNAMICS ---------" << endl;
-    cout << "------------------------------------------" << endl;
-    cout << "------------------------------------------" << endl;
-    G.addNewAgents(agentsToAdd);
-    G.simulateGameDynamicsRandomOrder(model, s);
-    G.drawGraph(direction, "expandedDynamicsGraph");
-    edgeCapacity = G.numberOfEdges(direction);
-    printCapacityVector(edgeCapacity, direction);
-    */
-    
+    else if (modification == "red") {
+        cout << "------------------------------------------" << endl;
+        cout << "------------------------------------------" << endl;
+        cout << "--------- REDUCED GRAPH DYNAMICS ---------" << endl;
+        cout << "------------------------------------------" << endl;
+        cout << "------------------------------------------" << endl;
+        n = n - agentsToRemove;
+        G.removeAgents(agentsToRemove);
+        if (order == "ra") numRounds = G.simulateGameDynamicsRandomOrder(model, s);
+        else if (order == "rr") numRounds = G.simulateGameDynamics(model);
+        else if (order == "pr") {
+            vector<int> agentOrder(n);
+            for (int i = 0; i < n; ++i)
+                agentOrder[i] = n-i-1;
+            numRounds = G.simulateGameDynamics(model, agentOrder);
+        }
+
+        name = "reducedDynamics-" + order + "-" + model + "Flow-n" + to_string(agentsToRemove);  
+        G.drawGraph(direction, name);
+        G.printModelsUtility(model);
+        cout << "Number of rounds played: " << numRounds << endl;
+        printCapacityVector(G, 0);
+        printCapacityVector(G, 1);
+        printMaximalCluster(G, k+1);
+    }
 }
 
 

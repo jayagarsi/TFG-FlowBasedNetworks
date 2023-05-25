@@ -27,15 +27,15 @@ int main() {
     
     int n = 10;
     int m = 34;
-    int k = 12;
+    int k = 6;
     int s = 200;
     int agentsToAdd = 30;
     int agentsToRemove = 17;
-    double p = 0.25;
+    double p = 0.75;
     string model = "min";
-    string graphType = "gnm";
+    string graphType = "gnp";
     string modification = "none";            // red == reeduction, exp == expansion, none
-    string order = "ra";                    // rr === Round Robin, ra === Random, pr === Personal
+    string order = "rr";                    // rr === Round Robin, ra === Random, pr === Personal
     int direction = 1;                      // 0  === directed, 1 === undirected
     int numRounds = 0;
     

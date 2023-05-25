@@ -87,6 +87,7 @@ class Network {
         void drawGraph(int g, const string& filename);
         void readGraphFromFile(const string& filename);
         void writeGraphToFile(int g, const string& filename);
+        void writeGraphToFile(Graph& F, const string& filename);
         void appendResultsToFile(const string& filename);
 
         // Auxiliar

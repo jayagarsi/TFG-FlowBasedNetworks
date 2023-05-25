@@ -493,41 +493,27 @@ void Network::removeAgents(int na) {
  */
 int Network::minimumGraphCut(Graph& F) {
     int n = F.size();
-    vector<vector<int>> mat(n, vector<int>(n, 0));
+    Graph H(n, vector<int>(n, 0));
     for (int i = 0; i < n; ++i) {
         for (int j = 0; j < n; ++j)
-            mat[i][j] = F[i][j];
+            H[i][j] = F[i][j];
     }
     int minCut = INT_MAX;
-    vector<vector<int>> co(n);
-    for (int i = 0; i < n; i++) co[i] = {i};
     for (int ph = 1; ph < n; ph++) {
-        vector<int> w = mat[0];
+        vector<int> w = H[0];
         size_t s = 0, t = 0;
         for (int it = 0; it < n - ph; it++){
             w[t] = INT_MIN;
             s = t;
             t = max_element(w.begin(), w.end()) - w.begin();
-            for (int i = 0; i < n; i++) w[i] += mat[t][i];
+            for (int i = 0; i < n; i++) w[i] += H[t][i];
         }
-        minCut = min(minCut, w[t] - mat[t][t]);
-        co[s].insert(co[s].end(), co[t].begin(), co[t].end());
-        for (int i = 0; i < n; i++) mat[s][i] += mat[t][i];
-        for (int i = 0; i < n; i++) mat[i][s] = mat[s][i];
-        mat[0][t] = INT_MIN;
+        minCut = min(minCut, w[t] - H[t][t]);
+        for (int i = 0; i < n; i++) H[s][i] += H[t][i];
+        for (int i = 0; i < n; i++) H[i][s] = H[s][i];
+        H[0][t] = INT_MIN;
     }
     return minCut;
-    /*
-    double minCut = 0.0;
-    double minUVCut = 0.0;
-    for (int u = 0; u < n; ++u) {
-        for (int v = u+1; v < n; ++v) {
-            minUVCut = minimumSTCut(u, v);
-            minCut = max(minCut, minUVCut);
-        }
-    }
-    return minCut;
-    */
 }
 
 /**
@@ -1184,6 +1170,22 @@ void Network::writeGraphToFile(int g, const string& filename) {
                 file << G[u][v] << " ";
             else
                 file << F[u][v] << " ";
+        }
+        file << endl;
+    }
+    file.close();
+    cout << "Completed!" << endl;
+}
+
+void Network::writeGraphToFile(Graph& F, const string& filename) {
+    ofstream file;
+    string path = "./" + filename + ".txt";
+    cout << "Writing into the file..." << endl;
+    file.open(path, ios::out | ios::trunc);
+    file << n << endl;
+    for (int u = 0; u < n; ++u) {
+        for (int v = 0; v < n; ++v) {
+            file << F[u][v] << " ";
         }
         file << endl;
     }

@@ -39,11 +39,17 @@ runMultipleExperiments() {
             echo "--------- EXPERIMENT WITH K $K ---------"
             dynamicsImageFile=$model"Flow-"$order"-k"$k".png"
             echo $n > echo $k > echo $m > echo $p > echo $s > echo $model > echo $graphType > echo $order > echo $modification > echo $csvFile > echo $experiment > $parametersFile
-            ./dynamics
+            if ./dynamics; then
+                echo "Dynamics was executed correctly!"
+            else
+                echo "Someting went wrong executing the Dynamics"
+                echo ",,,,," > $csvFile
+            fi
             case $order in
                 ra)
                     mv $dynamicsImageFile $filePath"/Random/"
                     ;;
+          
                 rr)
                     mv $dynamicsImageFile $filePath"/RoundRobin/"
                     ;;
@@ -51,6 +57,7 @@ runMultipleExperiments() {
                     echo "Something went wrong"
                     ;;
             esac
+            mv -vn "originalGraph-k$k.png" $filePath
         done
         mv -vn $csvFile $filePath
         rm -f $parametersFile
@@ -77,7 +84,12 @@ runMultipleExperiments() {
             echo "--------- EXPERIMENT WITH K $K ---------"
             dynamicsImageFile=$model"Flow-"$order"-k"$k".png"
             echo $n > echo $k > echo $m > echo $p > echo $s > echo $model > echo $graphType > echo $order > echo $modification > echo $csvFile > echo $experiment > $parametersFile
-            ./dynamics
+            if ./dynamics; then
+                echo "Dynamics was executed correctly!"
+            else
+                echo "Someting went wrong executing the Dynamics"
+                echo ",,,,," > $csvFile
+            fi
             case $order in
                 ra)
                     mv $dynamicsImageFile $filePath"/Random"
@@ -90,7 +102,6 @@ runMultipleExperiments() {
                     ;;
             esac
         done
-        mv -vn "originalGraph-k$k.png" $filePath
         mv -vn $csvFile $filePath
         rm -f $parametersFile
     done
@@ -99,19 +110,37 @@ runMultipleExperiments() {
     echo "---------------------------------------------"
 }
 
-n=10
-maxK=12
+n=5
+maxK=10
 m=34
-p=0.25
+p=0.75
 s=200
-graphType="gnp"
-basePath="../test/FixedNIncreasingK/Gnp"
-mkdir -p $basePath
-destinyFilePath=$basePath"/Graph1-n$n-p$p-s$s"
+graphType="empty"
+case $graphType in
+    gnp)
+        basePath="../test/FixedNIncreasingK/Gnp"
+        mkdir -p $basePath
+        destinyFilePath=$basePath"/Graph2-n$n-p$p-s$s"
+        ;;
+    gnm)
+        basePath="../test/FixedNIncreasingK/Gnm"
+        mkdir -p $basePath
+        destinyFilePath=$basePath"/Graph2-n$n-m$m-s$s"
+        ;;
+    empty)
+        basePath="../test/FixedNIncreasingK/emptyGraph"
+        mkdir -p $basePath
+        destinyFilePath=$basePath"/Graph2-n$n-s$s"
+        ;;
+    *)
+        echo "Pick a correct graph type"
+        return
+        ;;
+esac
 
 mkdir -p $destinyFilePath
 mkdir -p $destinyFilePath"/Random"
 mkdir -p $destinyFilePath"/RoundRobin"
 make
-runMultipleExperiments $n $m $p $maxK $s $graphType $order $destinyFilePath
+runMultipleExperiments $n $m $p $maxK $s $graphType $destinyFilePath
 make clearSpace

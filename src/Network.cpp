@@ -617,6 +617,22 @@ void Network::inducedSubgraph(const Graph& F, Graph& H, vector<int>& inducingNod
     }
 }
 
+bool Network::isNetworkMaximalCluster(int j) {
+    bool isMaximal = true;
+    for (int i = 0; i < n and isMaximal; ++i) {
+        vector<int> remainingNodes(n-1);
+        for (int j = 0; j < n-1; ++j)
+            if (j >= i) remainingNodes[j] = j+1;
+            else remainingNodes[j] = j;
+        Graph H = Graph(n-1, vector<int>(n-1, 0));
+        inducedSubgraph(F, H, remainingNodes, 1);
+        int minCut = minimumGraphCut(H);
+        if (minCut >= j) 
+            isMaximal = false;
+    }
+    return isMaximal;
+}
+
 /*----------------------- EXHAUSTIVE SEARCH -----------------------*/
 
 /**
@@ -733,20 +749,20 @@ bool Network::isAgentHappy(int u, vector<int>& agentBestStrategy, const string& 
     Graph Gaux(n, vector<int>(n, 0));
     for (int w = 0; w < n; ++w)
         for (int v = 0; v < n; ++v)
-            if (w != u) 
+            if (w != u)
                 Gaux[w][v] = G[w][v];
 
+    bool isHappy = false;
     if (model == "min") {
         auto actualUtility = minFlowAgentUtility(F, u);
         pair<int, int> maxUtility = make_pair(0, 0);
         bestResponseMinFlow(Gaux, u, 0, 0, maxUtility, agentBestStrategy);
         // If agent is happy there is no better move than the actual
         // so then the maximum utility is less or equal than the actual one
-        bool isHappy = false;                                       // the agent will be unhappy if the maximum minCut is bigger than the actual
+        // the agent will be unhappy if the maximum minCut is bigger than the actual
         if (maxUtility.first == actualUtility.first)                // agent will only be happy when he cannot improve the minimum cut
-            isHappy = maxUtility.second == actualUtility.second;    // nor the minimum cut of their neighbors
+            isHappy = (maxUtility.second == actualUtility.second);    // nor the minimum cut of their neighbors
         cout << u << ": (" << actualUtility.first << ", " << actualUtility.second << ")" << " (" << maxUtility.first << ", " << maxUtility.second << ") " << isHappy << endl;
-        return isHappy;
     }
     else {
         auto actualUtility = avgFlowAgentUtility(F, u);
@@ -754,10 +770,10 @@ bool Network::isAgentHappy(int u, vector<int>& agentBestStrategy, const string& 
         bestResponseAvgFlow(Gaux, u, 0, 0, maxUtility, agentBestStrategy);
         // If agent is happy there is no better move than the actual
         // so then the maximum utility is less or equal than the actual one
-        bool isHappy = (maxUtility <= actualUtility);
+        isHappy = (maxUtility <= actualUtility);
         cout << u << ": " << actualUtility << " " << maxUtility << " " << isHappy << endl;
-        return isHappy;
     }
+    return isHappy;
 }
 
 /*----------------------- GAME DYNAMICS -----------------------*/

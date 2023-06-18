@@ -36,14 +36,14 @@ runMultipleExperiments() {
         touch $csvFile
         echo "OriginalUtility,EquilibriumUtility,Nrounds,NedgesDir,NedgesUndir,MaxClust" > $csvFile
         for ((k=1; k<=maxK; k++)) do
-            echo "--------- EXPERIMENT WITH K $K ---------"
+            echo "--------- EXPERIMENT WITH K $k ---------"
             dynamicsImageFile=$model"Flow-"$order"-k"$k".png"
             echo $n > echo $k > echo $m > echo $p > echo $s > echo $model > echo $graphType > echo $order > echo $modification > echo $csvFile > echo $experiment > $parametersFile
             if ./dynamics; then
                 echo "Dynamics was executed correctly!"
             else
                 echo "Someting went wrong executing the Dynamics"
-                echo ",,,,," > $csvFile
+                echo ",,,,," >> $csvFile
             fi
             case $order in
                 ra)
@@ -81,14 +81,14 @@ runMultipleExperiments() {
         touch $csvFile
         echo "OriginalUtility,EquilibriumUtility,Nrounds,NedgesDir,NedgesUndir,MaxClust" > $csvFile
         for ((k=1; k<=maxK; k++)) do
-            echo "--------- EXPERIMENT WITH K $K ---------"
+            echo "--------- EXPERIMENT WITH K $k ---------"
             dynamicsImageFile=$model"Flow-"$order"-k"$k".png"
             echo $n > echo $k > echo $m > echo $p > echo $s > echo $model > echo $graphType > echo $order > echo $modification > echo $csvFile > echo $experiment > $parametersFile
             if ./dynamics; then
                 echo "Dynamics was executed correctly!"
             else
                 echo "Someting went wrong executing the Dynamics"
-                echo ",,,,," > $csvFile
+                echo ",,,,," >> $csvFile
             fi
             case $order in
                 ra)
@@ -110,12 +110,12 @@ runMultipleExperiments() {
     echo "---------------------------------------------"
 }
 
-n=5
-maxK=10
-m=34
+n=8
+maxK=7
+m=8
 p=0.75
-s=200
-graphType="empty"
+s=500
+graphType="gnp"
 case $graphType in
     gnp)
         basePath="../test/FixedNIncreasingK/Gnp"

@@ -26,21 +26,20 @@ int main() {
     // Parameters to the simulation
     
     int n = 10;
-    int m = 34;
-    int k = 6;
+    int m = 70;
+    int k = 3;
     int s = 200;
-    int agentsToAdd = 30;
+    int agentsToAdd = 3;
     int agentsToRemove = 17;
     double p = 0.75;
-    string model = "min";
+    string model = "avg";
     string graphType = "gnp";
     string modification = "none";            // red == reeduction, exp == expansion, none
     string order = "rr";                    // rr === Round Robin, ra === Random, pr === Personal
     int direction = 1;                      // 0  === directed, 1 === undirected
     int numRounds = 0;
-    
     Network G(n, k);
-   
+
     cout << "------------------------------------------" << endl;
     cout << "------------------------------------------" << endl;
     cout << "------------ ORIGINAL GRAPH --------------" << endl;
@@ -48,7 +47,7 @@ int main() {
     cout << "------------------------------------------" << endl;
     if (graphType == "gnm" or graphType == "gnp") 
         G.buildRandomGraph(n, m, k, s, p, graphType);
-
+    G.printAdjacencyMatrix(0);
     G.drawGraph(direction, "originalGraph");
     G.printModelsUtility(model);
     printCapacityVector(G, direction);
@@ -70,9 +69,11 @@ int main() {
     G.drawGraph(direction, name);
     G.printModelsUtility(model);
     cout << "Number of rounds played: " << numRounds << endl;
-    printCapacityVector(G, 0);
-    printCapacityVector(G, 1);
+    // printCapacityVector(G, 0);
+    // printCapacityVector(G, 1);
     printMaximalCluster(G, k+1);
+    if (G.isNetworkMaximalCluster(k+1)) cout << "The networks IS a maximal (k+1)-cluster" << endl;
+    else cout << "The networks IS NOT a maximal (k+1)-cluster" << endl;
 
     if (modification == "exp") {
         cout << "------------------------------------------" << endl;
@@ -94,8 +95,8 @@ int main() {
         G.drawGraph(direction, name);
         G.printModelsUtility(model);
         cout << "Number of rounds played: " << numRounds << endl;
-        printCapacityVector(G, 0);
-        printCapacityVector(G, 1);
+        // printCapacityVector(G, 0);
+        // printCapacityVector(G, 1);
         printMaximalCluster(G, k+1);
     }
 

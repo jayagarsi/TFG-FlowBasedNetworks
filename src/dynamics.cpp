@@ -12,7 +12,7 @@ int sumValues(const vector<int> &array) {
 
 int main() {
     int n, m, k, s, agentsToChange;
-    int direction = 0;
+    int direction = 1;
     double p;
     string model, graphType, order, modification, csvFilename, experiment;
     string name = "originalGraph";
@@ -60,32 +60,29 @@ int main() {
     else if (experiment == "fixedKincreasingN") name = model + "Flow-" + order + "-n" + to_string(n);
     else if (experiment == "networkExpansion" or experiment == "networkReduction") { 
         name = "originalDynamics-" + order + "-" + model + "Flow";
+        
         G.drawGraph(direction, name);
-        int newN = n;
         if (experiment == "networkExpansion") {
-            newN += agentsToChange;
+            n += agentsToChange;
             G.addNewAgents(agentsToChange);
             name = "expandedDynamics-";
         }
         else if (experiment == "networkReduction") {
-            newN -= agentsToChange;
+            n -= agentsToChange;
             G.removeAgents(agentsToChange);
             name = "reducedDynamics-";
         }
 
-        double changedOriginalUtility, changedEquilibriumUtility;
-        if (model == "min")
-            changedOriginalUtility = G.minFlowSocialUtility();
-        else if (model == "avg")
-            changedOriginalUtility = G.avgFlowSocialUtility();
-
+        double changedEquilibriumUtility;
+        
         int changedNumberOfRounds = 0;
         if (order == "ra") changedNumberOfRounds = G.simulateGameDynamicsRandomOrder(model, s);
         else if (order == "rr") changedNumberOfRounds = G.simulateGameDynamics(model);
         else if (order == "pr") {
             vector<int> agentOrder(n);
-            for (int i = 0; i < n; ++i)
+            for (int i = 0; i < n; ++i){
                 agentOrder[i] = n-i-1;
+            }
             changedNumberOfRounds = G.simulateGameDynamics(model, agentOrder);
         }
         if (model == "min")
@@ -101,20 +98,20 @@ int main() {
 
         vector<int> changedMaximalCluster = G.computeMaximalCluster(k + 1);
         int changedMaximalClusterSize = changedMaximalCluster.size();
-
         name += order + "-" + model + "Flow-n" + to_string(agentsToChange);
         G.drawGraph(direction, name);
 
         ofstream file;
         string path = "./" + csvFilename;
         file.open(path, ios::out | ios::app);
-        file << originalUtility << "," << equilibriumUtility << "," << numberOfRounds << "," << numEdgesDirected << "," << numEdgesUndirected << "," << maximalClusterSize;
-        file << changedOriginalUtility << "," << changedEquilibriumUtility << "," << changedNumberOfRounds << "," << changedNumEdgesDirected << "," << changedNumEdgesUndirected << "," << changedMaximalClusterSize << endl;
+        file << originalUtility << "," << equilibriumUtility << "," << numberOfRounds << "," << numEdgesDirected << "," << numEdgesUndirected << "," << maximalClusterSize << ",";
+        file << changedEquilibriumUtility << "," << changedNumberOfRounds << "," << changedNumEdgesDirected << "," << changedNumEdgesUndirected << "," << changedMaximalClusterSize << endl;
         file.close();
     }
 
     // Append results to file
     if (experiment == "fixedNincreasingK" or experiment == "fixedKincreasingN") {
+        G.drawGraph(direction, name);
         ofstream file;
         string path = "./" + csvFilename;
         file.open(path, ios::out | ios::app);

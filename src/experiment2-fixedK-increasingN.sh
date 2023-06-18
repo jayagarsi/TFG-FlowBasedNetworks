@@ -21,13 +21,13 @@ runMultipleExperiments() {
         model="min"
         case $graphType in
             gnp)
-                csvFile="$model""Flow-$order-n$n-p$p.csv"
+                csvFile="$model""Flow-$order-k$k-p$p-s$s.csv"
                 ;;
             gnm)
-                csvFile="$model""Flow-$order-n$n-m$m-s$s.csv"
+                csvFile="$model""Flow-$order-k$k-m$m-s$s.csv"
                 ;;
             empty)
-                csvFile="$model""Flow-$order-n$n.csv"
+                csvFile="$model""Flow-$order-k$k-s$s.csv"
                 ;;
             *)
                 echo "Something went wrong when assigning csvFile"
@@ -36,14 +36,14 @@ runMultipleExperiments() {
         touch $csvFile
         echo "OriginalUtility,EquilibriumUtility,Nrounds,NedgesDir,NedgesUndir,MaxClust" > $csvFile
         for ((n=3; n<=maxN; n++)) do
-            echo "--------- EXPERIMENT WITH N $N ---------"
+            echo "--------- EXPERIMENT WITH N $n ---------"
             dynamicsImageFile=$model"Flow-"$order"-n"$n".png"
             echo $n > echo $k > echo $m > echo $p > echo $s > echo $model > echo $graphType > echo $order > echo $modification > echo $csvFile > echo $experiment > $parametersFile
             if ./dynamics; then
                 echo "Dynamics was executed correctly!"
             else
                 echo "Someting went wrong executing the Dynamics"
-                echo ",,,,," > $csvFile
+                echo ",,,,," >> $csvFile
             fi
             case $order in
                 ra)
@@ -65,13 +65,13 @@ runMultipleExperiments() {
         model="avg"
         case $graphType in
             gnp)
-                csvFile="$model""Flow-$order-n$n-p$p.csv"
+                csvFile="$model""Flow-$order-k$k-p$p-s$s.csv"
                 ;;
             gnm)
-                csvFile="$model""Flow-$order-n$n-m$m-s$s.csv"
+                csvFile="$model""Flow-$order-k$k-m$m-s$s.csv"
                 ;;
             empty)
-                csvFile="$model""Flow-$order-n$n.csv"
+                csvFile="$model""Flow-$order-k$k-s$s.csv"
                 ;;
             *)
                 echo "Something went wrong when assigning csvFile"
@@ -80,14 +80,14 @@ runMultipleExperiments() {
         touch $csvFile
         echo "OriginalUtility,EquilibriumUtility,Nrounds,NedgesDir,NedgesUndir,MaxClust" > $csvFile
         for ((n=3; n<=maxN; n++)) do
-            echo "--------- EXPERIMENT WITH N $N ---------"
+            echo "--------- EXPERIMENT WITH N $n ---------"
             dynamicsImageFile=$model"Flow-"$order"-n"$n".png"
             echo $n > echo $k > echo $m > echo $p > echo $s > echo $model > echo $graphType > echo $order > echo $modification > echo $csvFile > echo $experiment > $parametersFile
             if ./dynamics; then
                 echo "Dynamics was executed correctly!"
             else
                 echo "Someting went wrong executing the Dynamics"
-                echo ",,,,," > $csvFile
+                echo ",,,,," >> $csvFile
             fi
             case $order in
                 ra)
@@ -109,10 +109,10 @@ runMultipleExperiments() {
     echo "---------------------------------------------"
 }
 
-k=5
+k=3
 m=70
-maxN=12
-s=200
+maxN=10
+s=500
 p=0.75
 graphType="gnp"
 case $graphType in

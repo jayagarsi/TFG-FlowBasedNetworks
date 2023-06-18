@@ -55,7 +55,8 @@ class Network {
         void convertDirectedToUndirected(Graph& G, Graph& F);
         vector<int> computeMaximalCluster(int j);
         void inducedSubgraph(const Graph& F, Graph& H, vector<int>& inducingNodes, int g);
-        
+        bool isNetworkMaximalCluster(int j);
+
         // Best Response
         vector<int> agentBestResponse(int u, const string& model);
         void computeAndApplyAgentBestResponse(int u, const string& model);

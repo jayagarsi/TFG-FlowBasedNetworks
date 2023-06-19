@@ -1,4 +1,4 @@
-# TFG-FlowBasedNetworks
+# TFG - Flow-Based Network Creation Games: Social Optima and Equilibria
 
 This Repository contains the implementation of the source code used in the Final Degree Project, Flow-Based Network Creation Games: Social Optima and Equilibria. The [documentation]() of the project can be found in the doc folder, along with the [original article](https://github.com/jayagarsi/TFG-FlowBasedNetworks/blob/master/doc/IJCAI2020-Lenzner.pdf) that we studied for this. Regarding this repository, the code has been implemented mainly in C++ but there are some Python and Bash scripts too. 
 

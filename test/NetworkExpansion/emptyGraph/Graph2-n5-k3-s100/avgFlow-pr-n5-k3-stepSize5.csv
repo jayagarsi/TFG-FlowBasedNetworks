@@ -1,0 +1,5 @@
+OriginalUtility,EquilibriumUtility,Nrounds,NedgesDir,NedgesUndir,MaxClust,chgEquilibriumUtility,chgNrounds,chgNedgesDir,chgNedgesUndir,chgMaxClust
+0,6,5,5,5,5,6,6,10,10,10
+0,6,5,5,5,5,6,11,15,15,15
+0,6,5,5,5,5,6,16,20,20,20
+0,6,5,5,5,5,6,21,25,25,25

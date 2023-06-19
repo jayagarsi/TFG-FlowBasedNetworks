@@ -1,0 +1,11 @@
+OriginalUtility,EquilibriumUtility,Nrounds,NedgesDir,NedgesUndir,MaxClust,chgEquilibriumUtility,chgNrounds,chgNedgesDir,chgNedgesUndir,chgMaxClust
+2,4,4,29,28,15,4,2,27,25,14
+2,4,4,29,28,15,4,2,25,24,13
+2,4,4,29,28,15,4,2,24,22,12
+2,4,4,29,28,15,4,2,22,20,11
+2,4,4,29,28,15,4,2,20,20,9
+2,4,4,29,28,15,4,3,18,18,8
+2,4,4,29,28,15,4,3,16,15,7
+2,4,4,29,28,15,4,3,13,12,7
+2,4,4,29,28,15,4,3,12,11,5
+2,4,4,29,28,15,4,3,10,10,4

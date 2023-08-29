@@ -1,0 +1,1 @@
+This section contains the results from each experiment. For each experiment, three initial topologies were chosen: the empty graph and the randomly generated G<sub>n,m</sub> and G<sub>n,p</sub> models. For each, we simulated games with the same parameters but changing seeds.

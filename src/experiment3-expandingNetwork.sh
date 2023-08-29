@@ -124,6 +124,7 @@ runMultipleExperiments() {
     echo "---------------------------------------------"
 }
 
+# PARAMETERS OF THE EXPERIMENT
 n=5
 k=3
 m=50

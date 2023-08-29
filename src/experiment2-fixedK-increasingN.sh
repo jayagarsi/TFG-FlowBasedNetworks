@@ -109,12 +109,13 @@ runMultipleExperiments() {
     echo "---------------------------------------------"
 }
 
-k=3
-m=70
+# PARAMETERS OF THE EXPERIMENT
+k=2
+m=8
 maxN=10
-s=500
+s=100
 p=0.75
-graphType="gnp"
+graphType="gnm"
 case $graphType in
     gnp)
         basePath="../test/FixedKIncreasingN/Gnp"

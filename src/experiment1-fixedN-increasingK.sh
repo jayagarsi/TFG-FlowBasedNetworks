@@ -110,6 +110,7 @@ runMultipleExperiments() {
     echo "---------------------------------------------"
 }
 
+# PARAMETERS OF THE EXPERIMENT
 n=8
 maxK=7
 m=8

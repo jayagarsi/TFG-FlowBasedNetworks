@@ -23,7 +23,6 @@ class Network {
         int minimumSTCut(Graph& F, vector<pair<int, int>> minCutNodes, int s, int t);
 
         // Best Response Models
-        void eraseAllConnections(Graph& G);
         void bestResponseMinFlow(Graph& GR, int u, int kUsed, int lastVisited, pair<int, int>& maxUtility, vector<int>& maxStrategy);
         void bestResponseAvgFlow(Graph& GR, int u, int kUsed, int lastVisited, double& maxUtility, vector<int>& maxStrategy);
 
@@ -31,6 +30,9 @@ class Network {
         void merge(vector<int>& v, int ini, int mid, int end);
         void mergeSortByDegree(vector<int>& v, int ini, int end);
         void shuffleArray(vector<int>& array);
+        void eraseAllConnections(Graph& G);
+        void copyGraph(Graph& F, Graph& H);
+        int positionOfMaxElement(vector<int>& v);
 
     public:
         // Constructors

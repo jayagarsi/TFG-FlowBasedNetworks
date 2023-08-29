@@ -146,18 +146,6 @@ int Network::minimumSTCut(Graph& F, vector<pair<int, int>> minCutNodes, int s, i
 /*----------------------- BEST RESPONSE MODELS -----------------------*/
 
 /**
- * @brief Removes all edges from a graph
- * 
- * @param G input graph
- */
-void Network::eraseAllConnections(Graph& G) {
-    int m = G.size();
-    for (int i = 0; i < m; ++i)
-        for (int j = 0; j < m; ++j)
-            G[i][j] = 0;
-}
-
-/**
  * @brief Algorithm to compute the Best Response of an agent in the MinFlow-NCG model by using
  * an exhaustive search.
  * 
@@ -356,6 +344,51 @@ void Network::shuffleArray(vector<int>& order) {
     }
 }
 
+/**
+ * @brief Removes all edges from a graph
+ * 
+ * @param G input graph
+ */
+void Network::eraseAllConnections(Graph& G) {
+    int m = G.size();
+    for (int i = 0; i < m; ++i)
+        for (int j = 0; j < m; ++j)
+            G[i][j] = 0;
+}
+
+/**
+ * @brief Copies given graph F into given graph H.
+ * Doesn't return anything
+ * 
+ * @param F source graph
+ * @param H destiny graph
+ */
+void Network::copyGraph(Graph& F, Graph& H) {
+    int n = F.size();
+    for (int i = 0; i < n; ++i)
+        for (int j = 0; j < n; ++j)
+            H[i][j] = F[i][j];
+}
+
+/**
+ * @brief Returns the position of the element 
+ * with greater value in a vector
+ * 
+ * @param v vector 
+ * @return int index of the greatest value inside the vector
+ */
+int Network::positionOfMaxElement(vector<int>& v) {
+    int index = 0;
+    int maxElement = -1;
+    for (int i = 0; i < v.size(); ++i) {
+        if (v[i] > maxElement) {
+            maxElement = v[i];
+            index = i;
+        }
+    }
+    return index;
+}
+
 
 /*----------------------- RANDOM GENERATORS -----------------------*/
 /**
@@ -494,18 +527,16 @@ void Network::removeAgents(int na) {
 int Network::minimumGraphCut(Graph& F) {
     int n = F.size();
     Graph H(n, vector<int>(n, 0));
-    for (int i = 0; i < n; ++i) {
-        for (int j = 0; j < n; ++j)
-            H[i][j] = F[i][j];
-    }
+    copyGraph(F, H);
+
     int minCut = INT_MAX;
     for (int ph = 1; ph < n; ph++) {
         vector<int> w = H[0];
-        size_t s = 0, t = 0;
-        for (int it = 0; it < n - ph; it++){
+        int s = 0, t = 0;
+        for (int it = 0; it < n - ph; it++) {
             w[t] = INT_MIN;
             s = t;
-            t = max_element(w.begin(), w.end()) - w.begin();
+            t = positionOfMaxElement(w);
             for (int i = 0; i < n; i++) w[i] += H[t][i];
         }
         minCut = min(minCut, w[t] - H[t][t]);

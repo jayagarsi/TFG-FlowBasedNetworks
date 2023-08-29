@@ -42,6 +42,7 @@ int main() {
             agentOrder[i] = n-i-1;
         numberOfRounds = G.simulateGameDynamics(model, agentOrder);
     }
+
     if (model == "min")
         equilibriumUtility = G.minFlowSocialUtility();
     else if (model == "avg")
@@ -53,8 +54,11 @@ int main() {
     int numEdgesDirected = sumValues(edgesDirected);
     int numEdgesUndirected = sumValues(edgesUndirected);
 
-    vector<int> maximalCluster = G.computeMaximalCluster(k + 1);
-    int maximalClusterSize = maximalCluster.size();
+    int maximalClusterSize = 0;
+    if (k < n-1) {
+        vector<int> maximalCluster = G.computeMaximalCluster(k + 1);
+        int maximalClusterSize = maximalCluster.size();
+    }
 
     if (experiment == "fixedNincreasingK") name = model + "Flow-" + order + "-k" + to_string(k);
     else if (experiment == "fixedKincreasingN") name = model + "Flow-" + order + "-n" + to_string(n);

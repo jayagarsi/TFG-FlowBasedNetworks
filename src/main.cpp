@@ -38,7 +38,29 @@ int main() {
     string order = "rr";                    // rr === Round Robin, ra === Random, pr === Personal
     int direction = 1;                      // 0  === directed, 1 === undirected
     int numRounds = 0;
+    n = 5;
+    k = 3;
     Network G(n, k);
+
+    int v1 = 0;
+    int v2 = 1;
+    int v3 = 2;
+    int v4 = 3;
+    int v5 = 4;
+
+    G.buyEdge(v1, v2, 1);
+    G.buyEdge(v1, v3, 1);
+    G.buyEdge(v1, v4, 1);
+    G.buyEdge(v2, v1, 1);
+    G.buyEdge(v2, v3, 2);
+    G.buyEdge(v3, v5, 3);
+    G.buyEdge(v4, v2, 1);
+    G.buyEdge(v4, v3, 2);
+    G.buyEdge(v5, v3, 3);
+
+    G.printModelsUtility("min");
+    G.printModelsUtility("avg");
+    return 0;
 
     cout << "------------------------------------------" << endl;
     cout << "------------------------------------------" << endl;

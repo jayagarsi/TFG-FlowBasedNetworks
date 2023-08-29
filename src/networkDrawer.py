@@ -1,10 +1,11 @@
 import networkx as nx
-import my_draw_networx_edge_labels as my_nx
+import plugin.my_draw_networx_edge_labels as my_nx
 import matplotlib.pyplot as plt
 import sys
 
 def drawDirectedNetwork(G, filename):
-    #https://stackoverflow.com/questions/22785849/drawing-multiple-edges-between-two-nodes-with-networkx
+    # Code extraced from:
+    #   https://stackoverflow.com/questions/22785849/drawing-multiple-edges-between-two-nodes-with-networkx
     pos=nx.spring_layout(G,seed=5)
     fig, ax = plt.subplots()
 

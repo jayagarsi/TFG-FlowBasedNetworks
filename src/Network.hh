@@ -10,11 +10,10 @@ const int INF = 1e9;
 
 class Network {
 
-    private:
-        int n, k = 0;
-        vector<int> budgets;
+    protected:
+        int n;
         Graph G;        // directed  version
-        Graph F;        // undireced version
+        Graph F;        // undirected version
         double networkMinCut = 0.0;
 
         // Flow Computations
@@ -22,22 +21,19 @@ class Network {
         void DFS(const Graph& residualG, int n, int s, vector<bool>& isInMinimumCut);
         int minimumSTCut(Graph& F, vector<pair<int, int>> minCutNodes, int s, int t);
 
-        // Best Response Models
-        void bestResponseMinFlow(Graph& GR, int u, int kUsed, int lastVisited, pair<int, int>& maxUtility, vector<int>& maxStrategy);
-        void bestResponseAvgFlow(Graph& GR, int u, int kUsed, int lastVisited, double& maxUtility, vector<int>& maxStrategy);
-
         // Auxiliar
         void merge(vector<int>& v, int ini, int mid, int end);
         void mergeSortByDegree(vector<int>& v, int ini, int end);
         void shuffleArray(vector<int>& array);
         void eraseAllConnections(Graph& G);
         void copyGraph(Graph& F, Graph& H);
+        void inducedSubgraph(const Graph& F, Graph& H, vector<int>& inducingNodes, int g);
         int positionOfMaxElement(vector<int>& v);
 
     public:
         // Constructors
         Network();
-        Network(int nAgents, int budget);
+        Network(int nAgents);
         ~Network();
     
         // Random Generators
@@ -54,22 +50,8 @@ class Network {
         int minimumGraphCut(Graph& F);
         int agentDegree(Graph& F, int u);
         int agentDegree(int g, int u);
+        vector<int> numberOfEdges(int g, int k);
         void convertDirectedToUndirected(Graph& G, Graph& F);
-        vector<int> computeMaximalCluster(int j);
-        void inducedSubgraph(const Graph& F, Graph& H, vector<int>& inducingNodes, int g);
-        bool isNetworkMaximalCluster(int j);
-
-        // Best Response
-        vector<int> agentBestResponse(int u, const string& model);
-        void computeAndApplyAgentBestResponse(int u, const string& model);
-        bool isAgentHappy(int u, vector<int>& agentBestStrategy, const string& model);
-        vector<int> agentBestResponseMinFlowDeterministic(int u);
-        vector<int> agentBestResponseAvgFlowDeterministic(int u);
-        
-        // Game Dynamics
-        int simulateGameDynamics(const string& model);
-        int simulateGameDynamics(const string& model, const vector<int>& agentOrder);
-        int simulateGameDynamicsRandomOrder(const string& model, int seed);
 
         // AVG-FLOW Model
         double avgFlowAgentUtility(Graph& F, int u);
@@ -95,7 +77,6 @@ class Network {
 
         // Auxiliar
         bool isCycleOptimumGraph();
-        vector<int> numberOfEdges(int g);
 };
 
 #endif

@@ -1,10 +1,11 @@
-#include "Network.hh"
+#include "BaseFlowGame.hh"
+#include "GeneralBudgetFlowGame.hh"
 #include <string>
 using namespace std;
 
-void printCapacityVector(Network& G, int direction) {
+void printCapacityVector(BaseFlowGame& G, int direction, int k) {
     int totalEdges = 0;
-    vector<int> edges = G.numberOfEdges(direction);
+    vector<int> edges = G.numberOfEdges(direction, k);
     cout << "Number of edges in the " << (direction ? "undirected" : "directed") << " network:" << endl;
     for (int i = 0; i < edges.size(); i++) {
         totalEdges += edges[i];
@@ -15,14 +16,15 @@ void printCapacityVector(Network& G, int direction) {
     cout << endl;
 }
 
-void printMaximalCluster(Network& G, int k) {
+void printMaximalCluster(BaseFlowGame& G, int k) {
     vector<int> maximalCluster = G.computeMaximalCluster(k+1);
     cout << "One possible maximal cluster of size " << maximalCluster.size() << ":" << endl;
     for (int i = 0; i < maximalCluster.size(); ++i) cout << maximalCluster[i] << ' ';
     cout << endl;
 }
 
-int main() {
+
+void baseModel() {
     // Parameters to the simulation
     
     int n = 10;
@@ -40,7 +42,7 @@ int main() {
     int numRounds = 0;
     n = 5;
     k = 3;
-    Network G(n, k);
+    BaseFlowGame G(n, k);
 
     int v1 = 0;
     int v2 = 1;
@@ -60,7 +62,6 @@ int main() {
 
     G.printModelsUtility("min");
     G.printModelsUtility("avg");
-    return 0;
 
     cout << "------------------------------------------" << endl;
     cout << "------------------------------------------" << endl;
@@ -72,7 +73,7 @@ int main() {
     G.printAdjacencyMatrix(0);
     G.drawGraph(direction, "originalGraph");
     G.printModelsUtility(model);
-    printCapacityVector(G, direction);
+    printCapacityVector(G, direction, k);
     
     cout << "------------------------------------------" << endl;
     cout << "------------------------------------------" << endl;
@@ -143,11 +144,10 @@ int main() {
         G.drawGraph(direction, name);
         G.printModelsUtility(model);
         cout << "Number of rounds played: " << numRounds << endl;
-        printCapacityVector(G, 0);
-        printCapacityVector(G, 1);
+        printCapacityVector(G, 0, k);
+        printCapacityVector(G, 1, k);
         printMaximalCluster(G, k+1);
     }
-}
 
 
     /*G.buyEdge(0, 1, 2);
@@ -163,3 +163,13 @@ int main() {
     /*G.buildRandomGraph(n, m, k, s, p, graphType);
     G.computeAndApplyAgentBestResponse(agent, model);
     */
+}
+
+void generalModel() {
+    int n = 5;
+    
+}
+
+int main() {
+    generalModel();
+}

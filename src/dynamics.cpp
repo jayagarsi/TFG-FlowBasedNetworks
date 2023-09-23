@@ -1,4 +1,4 @@
-#include "Network.hh"
+#include "BaseFlowGame.hh"
 #include <fstream>
 #include <string>
 using namespace std;
@@ -20,7 +20,7 @@ int main() {
     params.open("./dynamicsParameters.txt", ios::in);
     params >> n >> k >> m >> p >> s >> model >> graphType >> order >> modification >> csvFilename >> experiment;
     if (modification == "exp" or modification == "red") params >> agentsToChange;
-    Network G(n, k);
+    BaseFlowGame G(n, k);
     if (graphType == "gnm" or graphType == "gnp") 
         G.buildRandomGraph(n, m, k, s, p, graphType);
     if (experiment == "fixedNincreasingK") name = name + "-k" + to_string(k);
